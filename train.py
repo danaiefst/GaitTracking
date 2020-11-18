@@ -1,8 +1,9 @@
 import data_handler, tracking_nn
 import torch
 from torch.optim import Adam, SGD
+import os
 
-
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 model = tracking_nn.Net()
 data = data_handler.LegDataLoader()
 print("Loading dataset...")
