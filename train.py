@@ -16,7 +16,7 @@ patience = 5
 learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = 0
-save_path = "/home/danai/Desktop/mobot/model.pt"
+save_path = "/home/athdom/GaitTracking/model.pt"
 
 print("Started training...")
 for epoch in range(epochs):
@@ -38,7 +38,7 @@ for epoch in range(epochs):
             with torch.no_grad():
                 acc = 0
                 for i, j in zip(val_set_x, val_set_y):
-                    output = model.forward(i, j)
+                    output = model.forward(i)
                     acc += model.loss(output, j)
                 if acc > best_acc:
                     best_acc = acc

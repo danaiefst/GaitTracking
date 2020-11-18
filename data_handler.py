@@ -8,7 +8,7 @@ random.seed(0)
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, data_paths=["/home/danai/Desktop/mobot/p1/2.a","/home/danai/Desktop/mobot/p5/2.a", "/home/danai/Desktop/mobot/p11/2.a", "/home/danai/Desktop/mobot/p11/3.a", "/home/danai/Desktop/mobot/p16/3.a", "/home/danai/Desktop/mobot/p17/3.a", "/home/danai/Desktop/mobot/p18/2.a", "/home/danai/Desktop/mobot/p18/3.a"]):
+    def __init__(self, data_paths=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/2.a", "/home/athdom/GaitTracking/p18/3.a"]):
         self.data_paths = data_paths
 
     def load(self, batch_size = 64):
