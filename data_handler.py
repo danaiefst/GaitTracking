@@ -24,6 +24,7 @@ class LegDataLoader():
         for vid_i, video in enumerate(self.data):
             prev_frame = None
             for frame in video:
+                print(frame.split("."), frame.split(".")[0])
                 frame_i = int(frame.split(".")[0])
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
