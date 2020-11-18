@@ -1,12 +1,14 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import os
-import cv2
 import torch
+import sys
 
-person = "p18"
-scenario = "2.a"
-os.chdir("/home/danai/Desktop/mobot/{}/{}".format(person, scenario))
+person = sys.argv[1]
+scenario = sys.argv[2]
+path = sys.argv[3]
+
+os.chdir("/home/athdom/GaitTracking/{}/{}".format(person, scenario))
 valid = open("valid.txt", "r")
 centers = np.genfromtxt("valid_centers.csv", delimiter = ",")
 laser = np.genfromtxt("valid_laserpoints.csv", delimiter = ",")
@@ -82,6 +84,6 @@ for line in valid:
     i = int(start)
     end = int(end)
     while i <= end:
-        torch.save(torch.tensor(images[data_i]), "data/{}.pt".format(i))
+        torch.save(torch.tensor(images[data_i], dtype=torch.double), "data/{}.pt".format(i))
         data_i += 1
         i += 1

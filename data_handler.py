@@ -29,12 +29,12 @@ class LegDataLoader():
                     #print(i, prev_frame, frame_i)
                     self.batched_data.append(torch.stack(batch_data, dim = 0))
                     self.batched_labels.append(torch.stack(batch_labels, dim = 0))
-                    batch_data = [torch.jit.load(self.data_paths[vid_i] + "/data/" + frame)]
-                    batch_labels = [torch.jit.load(self.data_paths[vid_i] + "/labels/" + frame)]
+                    batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
+                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
                 else:
-                    batch_data.append(torch.jit.load(self.data_paths[vid_i] + "/data/" + frame))
-                    batch_labels.append(torch.jit.load(self.data_paths[vid_i] + "/labels/" + frame))
+                    batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
+                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
                     i -= 1
                 prev_frame = frame_i
 

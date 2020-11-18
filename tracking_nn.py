@@ -2,15 +2,16 @@ import torch
 from torch.autograd import Variable
 from torch.nn import LSTM, Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
 
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.double)
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(1, batch_size, 256), torch.zeros(1, batch_size, 256))
+        self.h = (torch.zeros(1, batch_size, 256).to(self.device), torch.zeros(1, batch_size, 256).to(self.device))
 
-    def __init__(self):
+    def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 8
+        self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=6, stride=2),
             #BatchNorm2d(16),
@@ -40,12 +41,12 @@ class Net(Module):
         p2 = torch.zeros(p2_h.shape)
         p1[:, y[:, 0, 2:].long()] = 1
         p2[:, y[:, 1, 2:].long()] = 1
-        prob_loss = ((p1 - p1_h) ** 2).sum() + ((p2 - p2_h) ** 2).sum()
+        prob_loss = ((p1.to(self.device) - p1_h) ** 2).sum() + ((p2.to(self.device) - p2_h) ** 2).sum()
         detect_cell1 = p1_h.reshape((p1.size(0), -1)).argmax(axis = 1)
         detect_cell2 = p2_h.reshape((p2.size(0), -1)).argmax(axis = 1)
-        detect_cell1 = torch.stack((detect_cell1 // 8, detect_cell1 % 8), dim = 1)
-        detect_cell2 = torch.stack((detect_cell2 // 8, detect_cell2 % 8), dim = 1)
-        detect_loss = ((y_h[torch.arange(p1.size(0)), 1:3, detect_cell1[:, 0], detect_cell1[:, 1]] - y[:, 0, 2:]) ** 2).sum() + ((y_h[torch.arange(p1.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]] - y[:, 1, 2:]) ** 2).sum() + ((detect_cell1 - y[:, 0, :2]) ** 2).sum() + ((detect_cell2 - y[:, 1, :2]) ** 2).sum()
+        detect_cell1 = torch.stack((detect_cell1 // 8, detect_cell1 % 8), dim = 1).to(self.device)
+        detect_cell2 = torch.stack((detect_cell2 // 8, detect_cell2 % 8), dim = 1).to(self.device)
+        detect_loss = ((y_h[torch.arange(p1.size(0)), 1:3, detect_cell1[:, 0], detect_cell1[:, 1]] - y[:, 0, 2:]) ** 2).sum() + ((y_h[torch.arange(p1.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]] - y[:, 1, 2:]) ** 2).sum() + ((detect_cell1.double() - y[:, 0, :2]) ** 2).sum() + ((detect_cell2.double() - y[:, 1, :2]) ** 2).sum()
         return prob_loss + detect_loss
 
     def forward(self, x):
@@ -59,5 +60,7 @@ class Net(Module):
         y = y.view(y.size(0), 1, -1)
         y, self.h = self.rnn_layers(y, self.h)
         y = y.reshape((x.size(0), 4, self.grid, self.grid))
-        x[:, [1, 2, 4, 5], :, :] = y
-        return x
+        z = torch.empty(x.shape, dtype=torch.double).to(self.device)
+        z[:, [0, 3], :, :] = x[:, [0, 3], :, :]
+        z[:, [1, 2, 4, 5], :, :] = y
+        return z

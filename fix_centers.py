@@ -2,11 +2,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 import torch
 import os
-import cv2
+import sys
 
-person = "p18"
-scenario = "2.a"
-os.chdir("/home/danai/Desktop/mobot/{}/{}".format(person, scenario))
+person = sys.argv[1]
+scenario = sys.argv[2]
+path = sys.argv[3]
+
+os.chdir("{}/{}/{}".format(path, person, scenario))
 valid = open("valid.txt", "r")
 centers = np.genfromtxt("valid_centers.csv", delimiter = ",")
 max_height = 1.2
@@ -31,6 +33,6 @@ for line in valid:
     i = int(start)
     end = int(end)
     while i <= end:
-        torch.save(torch.tensor(tags[tags_i]), "labels/{}.pt".format(i))
+        torch.save(torch.tensor(tags[tags_i], dtype=torch.double), "labels/{}.pt".format(i))
         tags_i += 1
         i += 1
