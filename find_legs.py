@@ -42,15 +42,15 @@ prev_center2 = mass_center2
 #line1, = ax.plot([centers[0, 0], centers[0, 2]], [centers[0, 1], centers[0, 3]], 'o')
 #line2, = ax.plot(laser_spots[in_box][np.logical_not(min_dists)][:, 0], laser_spots[in_box][np.logical_not(min_dists)][:, 1], 'o')
 #line3, = ax.plot(laser_spots[in_box][min_dists][:, 0], laser_spots[in_box][min_dists][:, 1], 'o')
-img = np.ones((img_side, img_side))
+img = np.zeros((img_side, img_side))
 y = np.round((laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side)
 x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
-img[x.astype(int), y.astype(int)] = 0
+img[x.astype(int), y.astype(int)] = 1
 images.append(img)
 
 for i in range(1, centers.shape[0]):
     #print(i)
-    img = np.ones((img_side, img_side))
+    img = np.zeros((img_side, img_side))
     laser_spots = laser[i].reshape((int(laser[i].shape[0] / 2), 2))
     in_box1 = np.logical_and(box[0][0] < laser_spots[:, 0], laser_spots[:, 0] < box[1][0])
     in_box2 = np.logical_and(box[0][1] < laser_spots[:, 1], laser_spots[:, 1] < box[1][1])
@@ -74,7 +74,7 @@ for i in range(1, centers.shape[0]):
     y = np.round((laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side)
     x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
     #print(x, y, laser_spots[in_box])
-    img[x.astype(int), y.astype(int)] = 0
+    img[x.astype(int), y.astype(int)] = 1
     images.append(img)
 
 data_i = 0
