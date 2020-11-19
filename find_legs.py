@@ -8,7 +8,7 @@ person = sys.argv[1]
 scenario = sys.argv[2]
 path = sys.argv[3]
 
-os.chdir("/home/athdom/GaitTracking/{}/{}".format(person, scenario))
+os.chdir("{}{}/{}".format(path, person, scenario))
 valid = open("valid.txt", "r")
 centers = np.genfromtxt("valid_centers.csv", delimiter = ",")
 laser = np.genfromtxt("valid_laserpoints.csv", delimiter = ",")
