@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 from torch.nn import Sigmoid, LSTM, Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
 
 torch.set_default_dtype(torch.double)

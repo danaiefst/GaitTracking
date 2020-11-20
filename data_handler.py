@@ -1,9 +1,56 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
 import os
 import random
+from matplotlib import pyplot as plt
 
 random.seed(0)
+
+max_height = 1.2
+min_height = 0.1
+max_width = 0.5
+min_width = -0.5
+img_side = 100
+grid = 8
+
+def find_center(labels):
+    x1 = img_side / grid * labels[0][0] + img_side / grid * labels[0][2]
+    y1 = img_side / grid * labels[0][1] + img_side / grid * labels[0][3]
+    x2 = img_side / grid * labels[1][0] + img_side / grid * labels[1][2]
+    y2 = img_side / grid * labels[1][1] + img_side / grid * labels[1][3]
+    return int(x1), int(y1), int(x2), int(y2)
+
+def mirror(img, labels):
+    new_img = img.flip(-1)
+    new_labels = torch.tensor([[labels[1][0], grid - 1 - labels[1][1], labels[1][2], 1 - labels[1][3]], [labels[0][0], grid - 1 - labels[0][1], labels[0][2], 1 - labels[0][3]]])
+    return new_img, new_labels
+
+def shift_coord(xcell, xcenter, xshift):
+    x = img_side / grid * xcell + img_side / grid * xcenter + xshift
+    temp = x / img_side * grid
+    return int(temp), temp % 1
+
+def shift(img, labels, x, y):
+    new_img = torch.zeros(img.shape)
+    new_img[x:, y:] = img[:img.shape[0] - x, :img.shape[1] - y]
+    xcell1, xcenter1 = shift_coord(labels[0][0], labels[0][2], x)
+    xcell2, xcenter2 = shift_coord(labels[1][0], labels[1][2], y)
+    ycell1, ycenter1 = shift_coord(labels[0][1], labels[0][3], x)
+    ycell2, ycenter2 = shift_coord(labels[1][1], labels[1][3], y)
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]])
+    return new_img, new_labels
+
+def rotate(img, labels, angle):
+    pass
+
+def print_data(img, labels):
+    image = img.detach().clone()
+    x1, y1, x2, y2 = find_center(labels)
+    image[x1, y1] = 0.5
+    image[x2, y2] = 0.5
+    print(image)
+    plt.imshow(image, cmap='gray')
+    plt.show()
+
 
 class LegDataLoader():
 

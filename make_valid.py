@@ -4,7 +4,7 @@ from time import sleep
 import numpy as np
 import os
 
-os.chdir("/home/danai/Desktop/mobot/p18/3.a")
+os.chdir("/home/danai/Desktop/GaitTracking/p1/2.a")
 centers = open("centers.csv", "r")
 laser = open("laserpoints.csv", "r")
 new_centers = open("valid_centers.csv", "w")
@@ -13,7 +13,7 @@ valid = open("valid.txt", "r")
 
 line_i = 0
 for line in valid:
-    start, end = line.strip().split(",")
+    start, end = line.strip().split(" ")
     start = int(start)
     end = int(end)
     while line_i < start:
