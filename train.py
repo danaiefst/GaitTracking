@@ -9,7 +9,7 @@ print("Working on", device)
 model = tracking_nn.Net(device).to(device)
 data = data_handler.LegDataLoader(data_paths)
 print("Loading dataset...")
-train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32, True)
 
 
 # Train the nn

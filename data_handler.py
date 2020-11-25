@@ -1,7 +1,10 @@
 import torch
 import os
 import random
+from scipy import ndimage
 from matplotlib import pyplot as plt
+from math import pi, sin, cos
+
 
 random.seed(0)
 
@@ -29,27 +32,95 @@ def shift_coord(xcell, xcenter, xshift):
     temp = x / img_side * grid
     return int(temp), temp % 1
 
+def rot_coord(x, y, angle):
+    a = angle * pi / 180
+    x -= 99
+    y -= 50
+    new_x = x * cos(a) - y * sin(a) + 99
+    new_y = x * sin(a) + y * cos(a) + 49
+    return new_x, new_y
+
+
 def shift(img, labels, x, y):
     new_img = torch.zeros(img.shape)
-    new_img[x:, y:] = img[:img.shape[0] - x, :img.shape[1] - y]
+    if x >= 0 and y >= 0:
+        new_img[x:, y:] = img[:img.shape[0] - x, :img.shape[1] - y]
+    elif x <= 0 and y >= 0:
+        new_img[:img.shape[0] + x, y:] = img[-x:, :img.shape[1] - y]
+    elif x >= 0 and y <= 0:
+        new_img[x:, :img.shape[1] + y] = img[:img.shape[0] - x, -y:]
+    else:
+        new_img[:img.shape[0] + x, :img.shape[1] + y] = img[-x:, -y:]
     xcell1, xcenter1 = shift_coord(labels[0][0], labels[0][2], x)
-    xcell2, xcenter2 = shift_coord(labels[1][0], labels[1][2], y)
-    ycell1, ycenter1 = shift_coord(labels[0][1], labels[0][3], x)
+    xcell2, xcenter2 = shift_coord(labels[1][0], labels[1][2], x)
+    ycell1, ycenter1 = shift_coord(labels[0][1], labels[0][3], y)
     ycell2, ycenter2 = shift_coord(labels[1][1], labels[1][3], y)
     new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]])
     return new_img, new_labels
 
 def rotate(img, labels, angle):
-    pass
+    # Rotate labels
+    x1 = img_side / grid * labels[0][0] + img_side / grid * labels[0][2]
+    y1 = img_side / grid * labels[0][1] + img_side / grid * labels[0][3]
+    x2 = img_side / grid * labels[1][0] + img_side / grid * labels[1][2]
+    y2 = img_side / grid * labels[1][1] + img_side / grid * labels[1][3]
+    x1, y1 = rot_coord(x1, y1, angle)
+    x2, y2 = rot_coord(x2, y2, angle)
+    temp = x1 / img_side * grid
+    xcell1, xcenter1 = int(temp), temp % 1
+    temp = y1 / img_side * grid
+    ycell1, ycenter1 = int(temp), temp % 1
+    temp = x2 / img_side * grid
+    xcell2, xcenter2 = int(temp), temp % 1
+    temp = y2 / img_side * grid
+    ycell2, ycenter2 = int(temp), temp % 1
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]])
+
+    # Rotate img
+    new_img = torch.zeros(img.shape)
+    x, y = torch.where(img == 1)
+    new_x, new_y = rot_coord(x, y, angle)
+    new_img[new_x.long(), new_y.long()] = 1
+    return new_img, new_labels
 
 def print_data(img, labels):
     image = img.detach().clone()
     x1, y1, x2, y2 = find_center(labels)
     image[x1, y1] = 0.5
     image[x2, y2] = 0.5
-    print(image)
     plt.imshow(image, cmap='gray')
     plt.show()
+
+def transform_batch(batch, labels):
+    shifts = [(0, 10), (0, -10), (-10, 0), (-10, 10), (-10, -10), (-15, 0), (-15, 10), (-15, -10)]
+    rotations = [5, 10, 15, -5, -10, -15]
+    batched_data = []
+    batched_labels = []
+    for s in shifts:
+        b = []
+        l = []
+        for frame_i, frame in enumerate(batch):
+            new_img, new_label = shift(frame, labels[frame_i], *s)
+            b.append(new_img)
+            l.append(new_label)
+        batched_data.append(torch.stack(b, dim = 0))
+        batched_labels.append(torch.stack(l, dim = 0))
+    for r in rotations:
+        b = []
+        l = []
+        for frame_i, frame in enumerate(batch):
+            new_img, new_label = rotate(frame, labels[frame_i], r)
+            b.append(new_img)
+            l.append(new_label)
+        batched_data.append(torch.stack(b, dim = 0))
+        batched_labels.append(torch.stack(l, dim = 0))
+    for frame_i, frame in enumerate(batch):
+        new_img, new_label = mirror(frame, labels[frame_i])
+        b.append(new_img)
+        l.append(new_label)
+    batched_data.append(torch.stack(b, dim = 0))
+    batched_labels.append(torch.stack(l, dim = 0))
+    return batched_data, batched_labels
 
 
 class LegDataLoader():
@@ -58,7 +129,7 @@ class LegDataLoader():
     def __init__(self, data_paths=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/2.a", "/home/athdom/GaitTracking/p18/3.a"]):
         self.data_paths = data_paths
 
-    def load(self, batch_size = 64):
+    def load(self, batch_size = 64, transform = False):
         self.data = []
         for path in self.data_paths:
             self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
@@ -69,13 +140,20 @@ class LegDataLoader():
         batch_data = []
         batch_labels = []
         for vid_i, video in enumerate(self.data):
+            print(vid_i)
             prev_frame = None
             for frame in video:
                 frame_i = int(frame.split(".")[0])
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
-                    self.batched_data.append(torch.stack(batch_data, dim = 0))
-                    self.batched_labels.append(torch.stack(batch_labels, dim = 0))
+                    temp_bd = torch.stack(batch_data, dim = 0)
+                    temp_bl = torch.stack(batch_labels, dim = 0)
+                    self.batched_data.append(temp_bd)
+                    self.batched_labels.append(temp_bl)
+                    if transform:
+                        t_data, t_labels = transform_batch(temp_bd, temp_bl)
+                        self.batched_data.extend(t_data)
+                        self.batched_labels.extend(t_labels)
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
                     batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
