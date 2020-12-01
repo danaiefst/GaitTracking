@@ -7,9 +7,10 @@ from data_handler import transforml
 
 person = sys.argv[1]
 scenario = sys.argv[2]
-path = sys.argv[3]
+source_path = sys.argv[3]
+dest_path = sys.argv[4]
 
-os.chdir("{}/{}/{}".format(path, person, scenario))
+os.chdir("{}/{}/{}".format(source_path, person, scenario))
 valid = open("valid.txt", "r")
 centers = np.genfromtxt("centers.csv", delimiter = ",")
 max_height = 1.2
@@ -34,8 +35,8 @@ for line in valid:
     i = int(start)
     end = int(end)
     while i <= end:
-        torch.save(torch.tensor(tags[i], dtype=torch.double), "labels/{}.pt".format(i))
+        torch.save(torch.tensor(tags[i], dtype=torch.double), "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, i))
         transformed = transforml(tags[i])
         for j in range(len(transformed)):
-            torch.save(transformed[j], "labels/{}.pt".format(j * (last + 1) + i))
+            torch.save(transformed[j], "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, j * (last + 1) + i))
         i += 1
