@@ -148,10 +148,8 @@ class LegDataLoader():
                 frame_i = int(frame.split(".")[0])
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
-                    temp_bd = torch.stack(batch_data, dim = 0)
-                    temp_bl = torch.stack(batch_labels, dim = 0)
-                    self.batched_data.append(temp_bd)
-                    self.batched_labels.append(temp_bl)
+                    self.batched_data.append(torch.stack(batch_data, dim = 0))
+                    self.batched_labels.append(torch.stack(batch_labels, dim = 0))
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
                     batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
