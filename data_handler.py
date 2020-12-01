@@ -27,7 +27,7 @@ def mirrori(img):
     return new_img
 
 def mirrorl(labels):
-    new_labels = torch.tensor([[labels[1][0], grid - 1 - labels[1][1], labels[1][2], 1 - labels[1][3]], [labels[0][0], grid - 1 - labels[0][1], labels[0][2], 1 - labels[0][3]]])
+    new_labels = torch.tensor([[labels[1][0], grid - 1 - labels[1][1], labels[1][2], 1 - labels[1][3]], [labels[0][0], grid - 1 - labels[0][1], labels[0][2], 1 - labels[0][3]]], dtype=torch.double)
     return new_labels
 
 def shift_coord(xcell, xcenter, xshift):
@@ -45,7 +45,7 @@ def rot_coord(x, y, angle):
 
 
 def shifti(img, x, y):
-    new_img = torch.zeros(img.shape)
+    new_img = torch.zeros(img.shape, dtype=torch.double)
     if x >= 0 and y >= 0:
         new_img[x:, y:] = img[:img.shape[0] - x, :img.shape[1] - y]
     elif x <= 0 and y >= 0:
@@ -61,12 +61,12 @@ def shiftl(labels, x, y):
     xcell2, xcenter2 = shift_coord(labels[1][0], labels[1][2], x)
     ycell1, ycenter1 = shift_coord(labels[0][1], labels[0][3], y)
     ycell2, ycenter2 = shift_coord(labels[1][1], labels[1][3], y)
-    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]])
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]], dtype=torch.double)
     return new_labels
 
 def rotatei(img, angle):
     # Rotate img
-    new_img = torch.zeros(img.shape)
+    new_img = torch.zeros(img.shape, dtype=torch.double)
     x, y = torch.where(img == 1)
     new_x, new_y = rot_coord(x, y, angle)
     new_img[new_x.long(), new_y.long()] = 1
@@ -88,7 +88,7 @@ def rotatel(labels, angle):
     xcell2, xcenter2 = int(temp), temp % 1
     temp = y2 / img_side * grid
     ycell2, ycenter2 = int(temp), temp % 1
-    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]])
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]], dtype=torch.double)
     return new_labels
 
 def print_data(img, labels):
