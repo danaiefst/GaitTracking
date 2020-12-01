@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import os
 import sys
+from data_handler import transforml
 
 person = sys.argv[1]
 scenario = sys.argv[2]
@@ -10,7 +11,7 @@ path = sys.argv[3]
 
 os.chdir("{}/{}/{}".format(path, person, scenario))
 valid = open("valid.txt", "r")
-centers = np.genfromtxt("valid_centers.csv", delimiter = ",")
+centers = np.genfromtxt("centers.csv", delimiter = ",")
 max_height = 1.2
 min_height = 0.1
 max_width = 0.5
@@ -26,13 +27,15 @@ for center in centers:
     x2 = grid - (center[3] - min_height) / (max_height - min_height) * grid
     tags.append([[int(x1), int(y1), x1 % 1, y1 % 1], [int(x2), int(y2), x2 % 1, y2 % 1]])
 
-tags_i = 0
 i = 0
+last = len(centers)
 for line in valid:
     start, end = line.strip().split(" ")
     i = int(start)
     end = int(end)
     while i <= end:
-        torch.save(torch.tensor(tags[tags_i], dtype=torch.double), "labels/{}.pt".format(i))
-        tags_i += 1
+        torch.save(torch.tensor(tags[i], dtype=torch.double), "labels/{}.pt".format(i))
+        transformed = transforml(tags[i])
+        for j in range(len(transformed)):
+            torch.save(transformed[j], "labels/{}.pt".format(j * (last + 1) + i))
         i += 1
