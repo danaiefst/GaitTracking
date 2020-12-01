@@ -142,7 +142,7 @@ class LegDataLoader():
         batch_data = []
         batch_labels = []
         for vid_i, video in enumerate(self.data):
-            print(vid_i)
+            print("Loading video ", vid_i, "...")
             prev_frame = None
             for frame in video:
                 frame_i = int(frame.split(".")[0])
