@@ -149,7 +149,7 @@ class LegDataLoader():
             prev_frame = None
             for frame in video:
                 frame_i = int(frame.split(".")[0])
-                print(frame_i)
+                print(i, frame_i)
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
                     self.batched_data.append(torch.stack(batch_data, dim = 0))
