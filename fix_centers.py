@@ -38,6 +38,5 @@ for line in valid:
         torch.save(torch.tensor(tags[i], dtype=torch.double), "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, i))
         transformed = transforml(tags[i])
         for j in range(len(transformed)):
-            print(tranformed[j])
             torch.save(transformed[j], "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, j * (last + 1) + i))
         i += 1
