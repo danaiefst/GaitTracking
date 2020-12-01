@@ -145,7 +145,7 @@ class LegDataLoader():
             i = batch_size
             batch_data = []
             batch_labels = []
-            print("Loading video ", vid_i, "...")
+            print("Loading video", vid_i, "...")
             prev_frame = None
             for frame in video:
                 frame_i = int(frame.split(".")[0])

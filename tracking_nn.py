@@ -34,6 +34,8 @@ class Net(Module):
         self.rnn_layers = LSTM(input_size = 256, hidden_size = 256, batch_first = True)
 
     def loss(self, y_h, y):
+        y = y.to(torch.double)
+        y_h = y_h.to(torch.double)
         """y are the data labels (format: [[[x_cell1, y_cell1, x_center1, y_center1], [x_cell2, y_cell2, x_center2, y_center2]], ...]), y_h (y hat) is the nn's output"""
         #print(y_h[:, 0, :, :])
         p1_h = y_h[:, 0, :, :]
@@ -52,6 +54,7 @@ class Net(Module):
         return prob_loss + detect_loss
 
     def forward(self, x):
+        x = x.to(torch.double)
         self.init_hidden(x.size(0))
         x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
         x = self.cnn_layers(x)
