@@ -35,8 +35,13 @@ for line in valid:
     i = int(start)
     end = int(end)
     while i <= end:
+        print(i)
+        if(tags[i][0][0] >= 8 or tags[i][0][1] >= 8 or tags[i][1][0] >= 8 or tags[i][1][1] >= 8):
+            print("Error", i)
         torch.save(torch.tensor(tags[i], dtype=torch.double), "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, i))
         transformed = transforml(tags[i])
         for j in range(len(transformed)):
+            if(transformed[j][0][0] >= 8 or transformed[j][0][1] >= 8 or transformed[j][1][0] >= 8 or transformed[j][1][1] >= 8):
+                print("Error transformed", i, j)
             torch.save(transformed[j], "{}/{}/{}/labels/{}.pt".format(dest_path, person, scenario, j * (last + 1) + i))
         i += 1
