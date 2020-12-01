@@ -15,6 +15,9 @@ min_width = -0.5
 img_side = 100
 grid = 8
 
+torch.set_default_dtype(torch.double)
+
+
 def find_center(labels):
     x1 = img_side / grid * labels[0][0] + img_side / grid * labels[0][2]
     y1 = img_side / grid * labels[0][1] + img_side / grid * labels[0][3]
@@ -146,6 +149,7 @@ class LegDataLoader():
             prev_frame = None
             for frame in video:
                 frame_i = int(frame.split(".")[0])
+                print(frame_i)
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
                     self.batched_data.append(torch.stack(batch_data, dim = 0))
