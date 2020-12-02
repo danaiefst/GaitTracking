@@ -31,11 +31,9 @@ for epoch in range(epochs):
         loss = model.loss(outputs, labels)
         loss.backward()
         optimizer.step()
-
         running_loss += loss.item()
-        if i % 50 == 49:
-            print("epoch:{}, batch: {}, running loss: {}".format(epoch, i, running_loss / 50))
-            running_loss = 0
+     print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
+     running_loss = 0
 """
     if epoch >= patience:
         with torch.no_grad():
