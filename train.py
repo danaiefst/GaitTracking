@@ -32,8 +32,8 @@ for epoch in range(epochs):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
-     print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
-     running_loss = 0
+    print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
+    running_loss = 0
 """
     if epoch >= patience:
         with torch.no_grad():
