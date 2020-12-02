@@ -14,9 +14,9 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 # Train the nn
 
-epochs = 100
+epochs = 50
 patience = 10
-learning_rate = 0.001
+learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = 0
 save_path = "/home/athdom/GaitTracking/model.pt"
@@ -34,8 +34,7 @@ for epoch in range(epochs):
         running_loss += loss.item()
     print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
     running_loss = 0
-"""
-    if epoch >= patience:
+    if epoch >= patience and epoch % 5 == 0:
         with torch.no_grad():
             acc = 0
             for i, j in zip(val_set_x, val_set_y):
@@ -46,4 +45,3 @@ for epoch in range(epochs):
             if acc > best_acc:
                 best_acc = acc
                 torch.save(model, save_path)
-"""
