@@ -103,8 +103,8 @@ def print_data(img, labels):
     plt.show()
 
 def transformi(img):
-    shifts = [(0, 10), (0, -10), (-10, 0), (-10, 10), (-10, -10), (-15, 0), (-15, 10), (-15, -10)]
-    rotations = [5, 10, 15, -5, -10, -15]
+    shifts = [(-15, 10), (-10, -10)]
+    rotations = [10, -10]
     ret = []
     for s in shifts:
         new_img = shifti(img, *s)
