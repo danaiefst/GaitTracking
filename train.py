@@ -3,8 +3,9 @@ import torch
 from torch.optim import Adam, SGD
 import os
 
-data_paths=["/gpu-data/athdom/p1/2.a"]#, "/gpu-data/athdom/p5/2.a"]#["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+data_paths = ["/gpu-data/athdom/p1/2.a"]
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 model = tracking_nn.Net(device).to(device)
 data = data_handler.LegDataLoader(data_paths)
@@ -14,9 +15,9 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 # Train the nn
 
-epochs = 50
+epochs = 100
 patience = 5
-learning_rate = 0.0001
+learning_rate = 0.00001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
@@ -45,4 +46,4 @@ for epoch in range(epochs):
             if acc < best_acc:
                 best_acc = acc
                 print("Saving model with acc", acc / len(val_set_x))
-                torch.save(model, save_path)
+                torch.save(model.state_dict(), save_path)
