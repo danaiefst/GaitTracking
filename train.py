@@ -4,9 +4,9 @@ from torch.optim import Adam, SGD
 import os
 
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-#data_paths = ["/gpu-data/athdom/p1/2.a"]
-data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+data_paths = ["/gpu-data/athdom/p1/2.a"]
+#data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 model = tracking_nn.Net(device).to(device)
 data = data_handler.LegDataLoader(data_paths)
@@ -27,6 +27,7 @@ print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
     for i in range(len(train_set_x)):
+        #print("Training batch", i, "/", len(train_set_x))
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
