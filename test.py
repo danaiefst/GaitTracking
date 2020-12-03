@@ -25,7 +25,7 @@ _, _, val_set_x, _, _, _ = data.load(32)
 device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 net = tracking_nn.Net(device)
 net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
-for batch in val_set_x:
+for batch in range(len(val_set_x)):
     out = net(batch)
     check_out(batch, out)
 

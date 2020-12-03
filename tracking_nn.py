@@ -5,7 +5,7 @@ torch.set_default_dtype(torch.double)
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(1, batch_size, 256).to(self.device), torch.zeros(1, batch_size, 256).to(self.device))
+        self.h = (torch.zeros(3, batch_size, 256).to(self.device), torch.zeros(3, batch_size, 256).to(self.device))
 
     def __init__(self, device):
         super(Net, self).__init__()
@@ -41,7 +41,7 @@ class Net(Module):
             Sigmoid(),
         )
 
-        self.rnn_layers = LSTM(input_size = 256, hidden_size = 256, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 256, hidden_size = 256, num_layers = 3, batch_first = True)
 
     def loss(self, y_h, y):
         y = y.to(torch.double)
