@@ -5,11 +5,12 @@ torch.set_default_dtype(torch.double)
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(3, batch_size, 256).to(self.device), torch.zeros(3, batch_size, 256).to(self.device))
+        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device))
 
     def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 8
+        self.num_of_layers = 2
         self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
@@ -41,7 +42,7 @@ class Net(Module):
             Sigmoid(),
         )
 
-        self.rnn_layers = LSTM(input_size = 256, hidden_size = 256, num_layers = 3, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 4 * self.grid * self.grid, hidden_size = 4 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
 
     def loss(self, y_h, y):
         y = y.to(torch.double)
