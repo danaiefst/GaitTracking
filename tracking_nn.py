@@ -5,33 +5,33 @@ torch.set_default_dtype(torch.double)
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device))
+        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
 
     def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 8
-        self.num_of_layers = 2
+        self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
-            BatchNorm2d(16),
+            #BatchNorm2d(16),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(16, 32, kernel_size=4),
-            BatchNorm2d(32),
+            #BatchNorm2d(32),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(32, 64, kernel_size=5),
-            BatchNorm2d(64),
+            #BatchNorm2d(64),
             ReLU(inplace=True),
             Conv2d(64, 128, kernel_size=5),
-            BatchNorm2d(128),
+            #BatchNorm2d(128),
             ReLU(inplace=True),
             Conv2d(128, 128, kernel_size=5),
-            BatchNorm2d(128),
+            #BatchNorm2d(128),
             ReLU(inplace=True),
             Conv2d(128, 128, kernel_size=3),
-            BatchNorm2d(128),
+            #BatchNorm2d(128),
             ReLU(inplace=True)
 
         )
@@ -42,7 +42,7 @@ class Net(Module):
             Sigmoid(),
         )
 
-        self.rnn_layers = LSTM(input_size = 4 * self.grid * self.grid, hidden_size = 4 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
 
     def loss(self, y_h, y):
         y = y.to(torch.double)
@@ -73,12 +73,7 @@ class Net(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
+        x = x.view(x.size(0), 1, -1)
+        x, self.h = self.rnn_layers(x, self.h)
         x = x.reshape((x.size(0), 6, self.grid, self.grid))
-        y = x[:, [1, 2, 4, 5], :, :]
-        y = y.view(y.size(0), 1, -1)
-        y, self.h = self.rnn_layers(y, self.h)
-        y = y.reshape((x.size(0), 4, self.grid, self.grid))
-        z = torch.empty(x.shape, dtype=torch.double).to(self.device)
-        z[:, [0, 3], :, :] = x[:, [0, 3], :, :]
-        z[:, [1, 2, 4, 5], :, :] = y
-        return z
+        return x
