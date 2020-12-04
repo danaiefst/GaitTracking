@@ -99,8 +99,10 @@ def print_data(img, labels):
     x1, y1, x2, y2 = find_center(labels)
     image[x1, y1] = 0.5
     image[x2, y2] = 0.5
-    plt.imshow(image, cmap='gray')
-    plt.show()
+    plt.imshow(image)
+    plt.show(block=False)
+    plt.pause(0.1)
+    plt.clf()
 
 def transformi(img):
     shifts = [(-15, 10), (-10, -10)]

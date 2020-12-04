@@ -28,6 +28,7 @@ for epoch in range(epochs):
     running_loss = 0
     for i in range(len(train_set_x)):
         #print("Training batch", i, "/", len(train_set_x))
+        model.init_hidden(1)
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
