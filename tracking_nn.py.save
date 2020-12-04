@@ -5,12 +5,12 @@ torch.set_default_dtype(torch.double)
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
+        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 4).to(self.device))
 
     def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 8
-        self.num_of_layers = 2
+        self.num_of_layers = 3
         self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
@@ -42,7 +42,7 @@ class Net(Module):
             Sigmoid(),
         )
 
-        self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 4 * self.grid * self.grid, hidden_size = 4 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
 
     def loss(self, y_h, y):
         y = y.to(torch.double)
@@ -64,15 +64,21 @@ class Net(Module):
         detect_loss1 = ((detect_cell1.double() - y[:, 0, :2]) ** 2).sum() + ((detect_cell2.double() - y[:, 1, :2]) ** 2).sum()
         detect_loss2 = ((y_h[torch.arange(p1.size(0)), 1:3, detect_cell1[:, 0], detect_cell1[:, 1]] - y[:, 0, 2:]) ** 2).sum() + ((y_h[torch.arange(p1.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]] - y[:, 1, 2:]) ** 2).sum()
         #print(prob_loss, detect_loss1, detect_loss2)
-        return 2 * prob_loss + 5 * detect_loss2 + detect_loss1
+        return 2 * prob_loss + 10 * detect_loss2 + detect_loss1
 
     def forward(self, x):
         x = x.to(torch.double)
+        self.init_hidden(x.size(0))
         x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
-        x = x.reshape((x.size(1), 6, self.grid, self.grid))
+        x = x.reshape((x.size(0), 6, self.grid, self.grid))
+        y = x[:, [1, 2, 4, 5], :, :]
+        y = y.view(y.size(0), 1, -1)
+        y, self.h = self.rnn_layers(y, self.h)
+        y = y.reshape((x.size(0), 4, self.grid, self.grid))
+        z = torch.empty(x.shape, dtype=torch.double).to(self.device)
+        #z[:, [0, 3], :, :] = x[:, [0, 3], :, :]
+        #z[:, [1, 2, 4, 5], :, :] = y
         return x
