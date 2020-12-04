@@ -14,4 +14,4 @@ p18/2.a/data/*
 p18/2.a/labels/*
 p18/3.a/data/*
 p18/3.a/labels/*
-model.pt
+model*
