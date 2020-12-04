@@ -99,10 +99,8 @@ def print_data(img, labels):
     x1, y1, x2, y2 = find_center(labels)
     image[x1, y1] = 0.5
     image[x2, y2] = 0.5
-    plt.imshow(image)
-    plt.show(block=False)
-    plt.pause(0.1)
-    plt.clf()
+    plt.imshow(image, cmap='gray')
+    plt.show()
 
 def transformi(img):
     shifts = [(-15, 10), (-10, -10)]
@@ -140,13 +138,11 @@ class LegDataLoader():
         self.data = []
         for path in self.data_paths:
             self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
-        self.all_data = []
-        self.all_labels = []
+        self.batched_data = []
+        self.batched_labels = []
         self.batch_size = batch_size
         for vid_i, video in enumerate(self.data):
             i = batch_size
-            cont_data = []
-            cont_labels = []
             batch_data = []
             batch_labels = []
             print("Loading video", vid_i, "...")
@@ -154,41 +150,24 @@ class LegDataLoader():
             for frame in video:
                 frame_i = int(frame.split(".")[0])
                 #print(i, frame_i)
-                if i == 0:
-                    cont_data.append(torch.stack(batch_data, dim=0))
-                    cont_labels.append(torch.stack(batch_labels, dim=0))
+                if i == 0 or prev_frame and prev_frame + 1 != frame_i:
+                    #print(i, prev_frame, frame_i)
+                    self.batched_data.append(torch.stack(batch_data, dim = 0))
+                    self.batched_labels.append(torch.stack(batch_labels, dim = 0))
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
                     batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
-                    if prev_frame and prev_frame + 1 != frame_i:
-                        self.all_data.append(cont_data)
-                        self.all_labels.append(cont_labels)
-                        cont_data = []
-                        cont_labels = []
-                elif prev_frame and prev_frame + 1 != frame_i:
-                    cont_data.append(torch.stack(batch_data, dim=0))
-                    cont_labels.append(torch.stack(batch_labels, dim=0))
-                    batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
-                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
-                    i = batch_size - 1
-                    self.all_data.append(cont_data)
-                    self.all_labels.append(cont_labels)
-                    cont_data = []
-                    cont_labels = []
                 else:
                     batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
                     batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
                     i -= 1
-
                 prev_frame = frame_i
-
             if batch_data != []:
-                cont_data.append(torch.stack(batch_data, dim=0))
-                cont_labels.append(torch.stack(batch_labels, dim=0))
-                self.all_data.append(cont_data)
-                self.all_labels.append(cont_labels)
+                self.batched_data.append(torch.stack(batch_data, dim = 0))
+                self.batched_labels.append(torch.stack(batch_labels, dim = 0))
 
-        print(len(self.all_data))
-        l = len(self.all_data)
-        print(int(l * 0.7), int(l * 0.85))
-        return self.all_data[:int(l * 0.7)], self.all_labels[:int(l * 0.7)], self.all_data[int(l * 0.7):int(l * 0.85)], self.all_labels[int(l * 0.7):int(l * 0.85)], self.all_data[int(l * 0.85):], self.all_labels[int(l * 0.85):]
+
+        s = list(zip(self.batched_data, self.batched_labels))
+        random.shuffle(s)
+        self.batched_data, self.batched_labels = zip(*s)
+        return self.batched_data[:int(len(self.batched_data) * 0.7)], self.batched_labels[:int(len(self.batched_labels) * 0.7)], self.batched_data[int(len(self.batched_data) * 0.7):int(len(self.batched_data) * 0.85)], self.batched_labels[int(len(self.batched_labels) * 0.7):int(len(self.batched_labels) * 0.85)], self.batched_data[int(len(self.batched_data) * 0.85):], self.batched_labels[int(len(self.batched_labels) * 0.85):]
