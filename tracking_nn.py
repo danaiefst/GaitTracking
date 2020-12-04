@@ -72,11 +72,7 @@ class Net(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(x.size(0), 1, -1)
-        y = torch.empty(x.shape).to(self.device)
-        for i, img in enumerate(x):
-            img = img.view(1, 1, -1)
-            img, self.h = self.rnn_layers(img, self.h)
-            y[i] = img
-        y = y.reshape((y.size(0), 6, self.grid, self.grid))
-        return y
+        x = x.view(1, x.size(0), -1)
+        x, self.h = self.rnn_layers(x, self.h)
+        x = x.view((x.size(1), 6, self.grid, self.grid))
+        return x
