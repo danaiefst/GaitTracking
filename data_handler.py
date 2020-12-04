@@ -168,8 +168,4 @@ class LegDataLoader():
                 self.batched_data.append(torch.stack(batch_data, dim = 0))
                 self.batched_labels.append(torch.stack(batch_labels, dim = 0))
 
-
-        s = list(zip(self.batched_data, self.batched_labels))
-        random.shuffle(s)
-        self.batched_data, self.batched_labels = zip(*s)
         return self.batched_data[:int(len(self.batched_data) * 0.7)], self.batched_labels[:int(len(self.batched_labels) * 0.7)], self.batched_data[int(len(self.batched_data) * 0.7):int(len(self.batched_data) * 0.85)], self.batched_labels[int(len(self.batched_labels) * 0.7):int(len(self.batched_labels) * 0.85)], self.batched_data[int(len(self.batched_data) * 0.85):], self.batched_labels[int(len(self.batched_labels) * 0.85):]

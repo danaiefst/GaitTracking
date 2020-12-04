@@ -10,7 +10,7 @@ class Net(Module):
     def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 8
-        self.num_of_layers = 2
+        self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
