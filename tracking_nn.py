@@ -4,8 +4,8 @@ from torch.nn import Sigmoid, LSTM, Linear, ReLU, CrossEntropyLoss, Sequential, 
 torch.set_default_dtype(torch.double)
 
 class Net(Module):
-    def init_hidden(self, batch_size):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
+    def init_hidden(self):
+        self.h = (torch.zeros(self.num_of_layers, 1, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, 1, self.grid * self.grid * 6).to(self.device))
 
     def __init__(self, device):
         super(Net, self).__init__()
@@ -68,12 +68,15 @@ class Net(Module):
 
     def forward(self, x):
         x = x.to(torch.double)
-        self.init_hidden(x.size(0))
         x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         x = x.view(x.size(0), 1, -1)
-        x, self.h = self.rnn_layers(x, self.h)
-        x = x.reshape((x.size(0), 6, self.grid, self.grid))
-        return x
+        y = torch.empty(x.shape).to(self.device)
+        for i, img in enumerate(x):
+            img = img.view(1, 1, -1)
+            img, self.h = self.rnn_layers(img, self.h)
+            y[i] = img
+        y = y.reshape((y.size(0), 6, self.grid, self.grid))
+        return y
