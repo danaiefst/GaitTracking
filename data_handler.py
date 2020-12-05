@@ -1,12 +1,8 @@
 import torch
 import os
-import random
 from scipy import ndimage
 from matplotlib import pyplot as plt
 from math import pi, sin, cos
-
-
-random.seed(0)
 
 max_height = 1.2
 min_height = 0.1

@@ -30,20 +30,31 @@ def check_out(batch, out, label):
         x_cell2, y_cell2 = detect_cell2 // 8, detect_cell2 % 8
         print_data(y, [[x_cell1, y_cell1, out[i][1, x_cell1, y_cell1], out[i][2, x_cell1, y_cell1]], [x_cell2, y_cell2, out[i][4, x_cell2, y_cell2], out[i][5, x_cell2, y_cell2]]], label[i])
 
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+def score(out, labels):
+    ret = 0
+    for i in range(out.shape[0]):
+        if out[i][0][0] == labels[i][0][0] and out[i][0][1] == labels[i][0][1]:
+            ret += 1
+        if out[i][1][0] == labels[i][1][0] and out[i][1][1] == labels[i][1][1]:
+            ret += 1
+     print(ret / out.shape[0] / 2)
+
+
+data_paths=["/home/danai/Desktop/GaitTracking/p18/3.a"]#["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths)
 print("Loading dataset...")
-_, _, val_set_x, val_set_y, _, _ = data.load(32)
+test_set_x, test_set_y, val_set_x, val_set_y, _, _ = data.load(32)
 
 device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 net = tracking_nn.Net(device)
 net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
-for i in range(len(val_set_x)):
+for i in range(len(test_set_x)):
     net.init_hidden(1)
-    batch = val_set_x[i]
+    batch = test_set_x[i]
     print("Calculating validation batch", i)
     out = net(batch)
-    check_out(batch, out, val_set_y[i])
+    print(score(out, labels))
+    check_out(batch, out, test_set_y[i])
 
 
 

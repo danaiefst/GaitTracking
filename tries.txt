@@ -1,0 +1,23 @@
+only patient 1:
+
+    lstm: 1 layer,
+    loss coeffs: 2, 5, 1
+
+    validation loss: 233
+
+
+    lstm: 1 layer,
+    loss coeffs: 2, 10, 1
+
+    validation loss: 290
+
+
+    lstm: 1 layer,
+    loss coeffs: 3, 5, 1
+
+    validation loss: 280
+
+    lstm: 1 layer,
+    loss coeffs: 2, 5, 2
+
+    validation loss: 291
