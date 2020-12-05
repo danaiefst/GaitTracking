@@ -21,3 +21,5 @@ only patient 1:
     loss coeffs: 2, 5, 2
 
     validation loss: 291
+
+ 
