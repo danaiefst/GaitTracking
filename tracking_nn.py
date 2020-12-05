@@ -66,7 +66,7 @@ class Net(Module):
         pos2 = detect_cell2.double() + y_h[torch.arange(p2.size(0)), 1:3, detect_cell2[:, 0], detect_cell2[:, 1]]
         pos2h = y[:, 1, :2] + y[:, 1, 2:]
         detect_loss = ((pos1 - pos1h) ** 2).sum() + ((pos2 - pos2h) ** 2).sum()
-        return prob_loss + detect_loss
+        return prob_loss + 2 * detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
@@ -76,5 +76,5 @@ class Net(Module):
         x = self.linear_layers(x)
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.reshape((x.size(1), 6, self.grid, self.grid))
+        x = x.view((x.size(1), 6, self.grid, self.grid))
         return x

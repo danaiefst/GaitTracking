@@ -17,8 +17,8 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 # Train the nn
 
 epochs = 100
-patience = 5
-learning_rate = 0.00001
+patience = 1
+learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
