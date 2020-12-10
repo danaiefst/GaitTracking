@@ -17,7 +17,7 @@ for data_path in data_paths:
     min_height = 0.1
     max_width = 0.5
     min_width = -0.5
-    img_side = 100
+    img_side = 112
     images = []
     tags = []
     grid = 7

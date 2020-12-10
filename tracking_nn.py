@@ -9,39 +9,57 @@ class Net(Module):
 
     def __init__(self, device):
         super(Net, self).__init__()
-        self.grid = 8
+        self.grid = 7
         self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
-            Conv2d(1, 16, kernel_size=7),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 32, kernel_size=4),
-            BatchNorm2d(32),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 64, kernel_size=5),
+            Conv2d(1, 64, kernel_size=7, stride=2, padding=3),
             BatchNorm2d(64),
             ReLU(inplace=True),
-            Conv2d(64, 128, kernel_size=5),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(64, 128, kernel_size=3, padding=1),
             BatchNorm2d(128),
             ReLU(inplace=True),
-            Conv2d(128, 128, kernel_size=3),
+            Conv2d(128, 64, kernel_size=1),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
+            Conv2d(64, 128, kernel_size=3, padding=1),
             BatchNorm2d(128),
             ReLU(inplace=True),
-            Conv2d(128, 128, kernel_size=3),
+            Conv2d(128, 256, kernel_size=3, padding=1),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(256, 128, kernel_size=1),
             BatchNorm2d(128),
             ReLU(inplace=True),
-            Conv2d(128, 128, kernel_size=3),
+            Conv2d(128, 256, kernel_size=3, padding=1),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            Conv2d(256, 128, kernel_size=1),
             BatchNorm2d(128),
-            ReLU(inplace=True)
+            ReLU(inplace=True),
+            Conv2d(128, 256, kernel_size=3, padding=2),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            Conv2d(256, 256, kernel_size=3, padding=1),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            Conv2d(256, 256, kernel_size=3, stride=2),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            Conv2d(256, 256, kernel_size=3, padding=1),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
+            Conv2d(256, 256, kernel_size=3, padding=1),
+            BatchNorm2d(256),
+            ReLU(inplace=True),
 
         )
 
         self.linear_layers = Sequential(
-            Linear(8192, 1024),
-            Linear(1024, 384),         #384 = 6*8*8
+            Linear(12544, 1024),
+            Linear(1024, 294),         #294 = 6*7*7
             Sigmoid(),
         )
 
