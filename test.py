@@ -5,6 +5,8 @@ import data_handler
 from scipy.ndimage import rotate
 import tracking_nn
 
+grid = 7
+
 def print_data(img, labels1, labels2):
     image = img.detach().clone()
     x1, y1, x2, y2 = data_handler.find_center(labels1)
@@ -26,8 +28,8 @@ def check_out(batch, out, label):
         p2_h = yh[3, :, :]
         detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
-        x_cell1, y_cell1 = detect_cell1 // 8, detect_cell1 % 8
-        x_cell2, y_cell2 = detect_cell2 // 8, detect_cell2 % 8
+        x_cell1, y_cell1 = detect_cell1 // grid, detect_cell1 % grid
+        x_cell2, y_cell2 = detect_cell2 // grid, detect_cell2 % grid
         print_data(y, [[x_cell1, y_cell1, out[i][1, x_cell1, y_cell1], out[i][2, x_cell1, y_cell1]], [x_cell2, y_cell2, out[i][4, x_cell2, y_cell2], out[i][5, x_cell2, y_cell2]]], label[i])
 
 def eucl_dist(out, labels):
@@ -38,8 +40,8 @@ def eucl_dist(out, labels):
         p2_h = yh[3, :, :]
         detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
-        x1, y1 = detect_cell1 // 8, detect_cell1 % 8
-        x2, y2 = detect_cell2 // 8, detect_cell2 % 8
+        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
         ret += (x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2
     return ret / out.shape[0] / 2
 

@@ -79,8 +79,8 @@ class Net(Module):
         prob_loss = ((p1.to(self.device) - p1_h) ** 2).sum() + ((p2.to(self.device) - p2_h) ** 2).sum()
         detect_cell1 = p1_h.reshape((p1.size(0), -1)).argmax(axis = 1)
         detect_cell2 = p2_h.reshape((p2.size(0), -1)).argmax(axis = 1)
-        detect_cell1 = torch.stack((detect_cell1 // 8, detect_cell1 % 8), dim = 1).to(self.device)
-        detect_cell2 = torch.stack((detect_cell2 // 8, detect_cell2 % 8), dim = 1).to(self.device)
+        detect_cell1 = torch.stack((detect_cell1 // self.grid, detect_cell1 % self.grid), dim = 1).to(self.device)
+        detect_cell2 = torch.stack((detect_cell2 // self.grid, detect_cell2 % self.grid), dim = 1).to(self.device)
         #print(y, detect_cell1, detect_cell2)
         pos1 = detect_cell1.double() + y_h[torch.arange(p1.size(0)), 1:3, detect_cell1[:, 0], detect_cell1[:, 1]]
         pos1h = y[:, 0, :2] + y[:, 0, 2:]
@@ -88,6 +88,7 @@ class Net(Module):
         pos2h = y[:, 1, :2] + y[:, 1, 2:]
         detect_loss = ((pos1 - pos1h) ** 2).sum() + ((pos2 - pos2h) ** 2).sum()
         return prob_loss + 2 * detect_loss
+
 
     def forward(self, x):
         x = x.to(torch.double)

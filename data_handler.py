@@ -8,8 +8,8 @@ max_height = 1.2
 min_height = 0.1
 max_width = 0.5
 min_width = -0.5
-img_side = 100
-grid = 8
+img_side = 112
+grid = 7
 
 torch.set_default_dtype(torch.double)
 
@@ -119,10 +119,16 @@ def transforml(label):
     ret = []
     for s in shifts:
         new_label = shiftl(label, *s)
-        ret.append(new_label)
+        if new_label[0][0] <= 6 and new_label[0][1] <= 6 and new_label[1][0] <= 6 and new_label[1][1] <= 6:
+            ret.append(new_label)
+        else:
+            print("Out of bounds", s)
     for r in rotations:
         new_label = rotatel(label, r)
-        ret.append(new_label)
+        if new_label[0][0] <= 6 and new_label[0][1] <= 6 and new_label[1][0] <= 6 and new_label[1][1] <= 6:
+            ret.append(new_label)
+        else:
+            print("Out of bounds", r)
     ret.append(mirrorl(label))
     return ret
 
