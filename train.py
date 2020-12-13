@@ -4,7 +4,8 @@ from torch.optim import Adam
 
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths = ["/gpu-data/athdom/p1/2.a"]
-data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
+#data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
+data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 model = tracking_nn.Net(device).to(device)
@@ -20,13 +21,14 @@ patience = 1
 learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
-save_path = "/home/athdom/GaitTracking/model.pt"
+save_path = "/home/shit/Desktop/GaitTracking/model.pt"
 
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
+    if epoch >= 7:
+        optimizer = Adam(model.parameters(), lr = 5 * 10 ** (-5))
     for i in range(len(train_set_x)):
-        model.init_hidden(1)
         #print("Training batch", i, "/", len(train_set_x))
         model.init_hidden(1)
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)

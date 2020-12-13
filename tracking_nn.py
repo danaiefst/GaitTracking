@@ -13,29 +13,37 @@ class Net(Module):
         self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
-            Conv2d(1, 64, kernel_size=7, stride=2),
+            Conv2d(1, 32, kernel_size=7, stride=2),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3),
+            Dropout(0.5),
             BatchNorm2d(64),
             ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
             Conv2d(64, 128, kernel_size=3),
+            Dropout(0.5),
             BatchNorm2d(128),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(128, 256, kernel_size=3),
-            BatchNorm2d(256),
+            Conv2d(128, 128, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(128),
             ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(256, 256, kernel_size=3),
-            BatchNorm2d(256),
-            ReLU(inplace=True),
-            Conv2d(256, 256, kernel_size=3),
-            BatchNorm2d(256),
+            Conv2d(128, 128, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(128),
             ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
-            Linear(12544, 1024),
+            Linear(6272, 1024),
+            Dropout(0.5),
+            ReLU(inplace=True),
             Linear(1024, 294),         #294 = 6*7*7
-            Sigmoid(),
+            Dropout(0.5),
+            ReLU(inplace=True)
         )
 
         self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)

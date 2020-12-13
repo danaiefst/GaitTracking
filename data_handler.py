@@ -142,10 +142,16 @@ class LegDataLoader():
         self.data = []
         for path in self.data_paths:
             self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
-        self.batched_data = []
-        self.batched_labels = []
-        self.batch_size = batch_size
+        train_set_x = []
+        train_set_y = []
+        val_set_x = []
+        val_set_y = []
+        test_set_x = []
+        test_set_y = []
+        batch_size = batch_size
         for vid_i, video in enumerate(self.data):
+            vid_batchd = []
+            vid_batchl = []
             i = batch_size
             batch_data = []
             batch_labels = []
@@ -156,8 +162,8 @@ class LegDataLoader():
                 #print(i, frame_i)
                 if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                     #print(i, prev_frame, frame_i)
-                    self.batched_data.append(torch.stack(batch_data, dim = 0))
-                    self.batched_labels.append(torch.stack(batch_labels, dim = 0))
+                    vid_batchd.append(torch.stack(batch_data, dim = 0))
+                    vid_batchl.append(torch.stack(batch_labels, dim = 0))
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
                     batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
@@ -167,7 +173,12 @@ class LegDataLoader():
                     i -= 1
                 prev_frame = frame_i
             if batch_data != []:
-                self.batched_data.append(torch.stack(batch_data, dim = 0))
-                self.batched_labels.append(torch.stack(batch_labels, dim = 0))
-
-        return self.batched_data[:int(len(self.batched_data) * 0.7)], self.batched_labels[:int(len(self.batched_labels) * 0.7)], self.batched_data[int(len(self.batched_data) * 0.7):int(len(self.batched_data) * 0.85)], self.batched_labels[int(len(self.batched_labels) * 0.7):int(len(self.batched_labels) * 0.85)], self.batched_data[int(len(self.batched_data) * 0.85):], self.batched_labels[int(len(self.batched_labels) * 0.85):]
+                vid_batchd.append(torch.stack(batch_data, dim = 0))
+                vid_batchl.append(torch.stack(batch_labels, dim = 0))
+            train_set_x.extend(vid_batchd[:int(len(vid_batchd) * 0.7)])
+            train_set_y.extend(vid_batchl[:int(len(vid_batchl) * 0.7)])
+            val_set_x.extend(vid_batchd[int(len(vid_batchd) * 0.7) : int(len(vid_batchd) * 0.85)])
+            val_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.7) : int(len(vid_batchl) * 0.85)])
+            test_set_x.extend(vid_batchd[int(len(vid_batchd) * 0.85):])
+            test_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.85):])
+        return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y

@@ -42,25 +42,26 @@ def eucl_dist(out, labels):
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
         x1, y1 = detect_cell1 // grid, detect_cell1 % grid
         x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-        ret += (x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2
+        ret += ((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
     return ret / out.shape[0] / 2
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p18/3.a"]#["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths)
 print("Loading dataset...")
-test_set_x, test_set_y, val_set_x, val_set_y, _, _ = data.load(32)
+_, _, val_set_x, val_set_y, _, _ = data.load(32)
 
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net = tracking_nn.Net(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
+net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/best_model.pt"))
+net.to(device)
 dist = 0
-for i in range(len(test_set_x)):
+for i in range(len(val_set_x)):
     with torch.no_grad():
         net.init_hidden(1)
-        batch = test_set_x[i]
+        batch = val_set_x[i].to(device)
         print("Calculating validation batch", i)
         out = net(batch)
-        dist += eucl_dist(out, test_set_y[i])
-        #check_out(batch, out, val_set_y[i])
-print("Mean dist:", dist / len(test_set_x))
+        dist += eucl_dist(out, val_set_y[i].to(device))
+        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), val_set_y[i].to(torch.device("cpu")))
+print("Mean dist:", dist / len(val_set_x))
