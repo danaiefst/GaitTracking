@@ -1,10 +1,15 @@
-import data_handler
+import data_handler, torch, os
+from matplotlib import pyplot as plt
 
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-data = data_handler.LegDataLoader(data_paths)
-print("Loading dataset...")
-_, _, val_set_x, val_set_y, _, _ = data.load(32)
-for i in range(len(val_set_x)):
-    print("Batch", i, "/", len(val_set_x))
-    for j in range(len(val_set_x[i])):
-        data_handler.print_data(val_set_x[i][j], val_set_y[i][j])
+data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+
+for i in range(len(data_paths)):
+    os.listdir
+    data = sorted(os.listdir(data_paths[i] + "/data"), key = lambda a: int(a.split(".")[0]))
+    img = torch.load(os.path.join(data_paths[i], "data", data[0]))
+    labels = torch.load(os.path.join(data_paths[i], "labels", data[0]))
+    print(labels)
+    data_handler.print_data(img, labels)
+    
+
+plt.close('all')

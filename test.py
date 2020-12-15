@@ -46,14 +46,14 @@ def eucl_dist(out, labels):
     return ret / out.shape[0] / 2
 
 
-data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths)
 print("Loading dataset...")
 _, _, val_set_x, val_set_y, _, _ = data.load(32)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net = tracking_nn.Net(device)
-net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/best_model.pt"))
+net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 net.to(device)
 dist = 0
 for i in range(len(val_set_x)):

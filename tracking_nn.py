@@ -17,7 +17,7 @@ class Net(Module):
             Dropout(0.5),
             BatchNorm2d(32),
             ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3),
+            Conv2d(32, 64, kernel_size=3, padding=1),
             Dropout(0.5),
             BatchNorm2d(64),
             ReLU(inplace=True),
@@ -26,11 +26,27 @@ class Net(Module):
             Dropout(0.5),
             BatchNorm2d(32),
             ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3),
+            Conv2d(32, 64, kernel_size=3, padding=1),
             Dropout(0.5),
             BatchNorm2d(64),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3, padding=1),
+            Dropout(0.5),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
             Conv2d(64, 32, kernel_size=1),
             Dropout(0.5),
             BatchNorm2d(32),
@@ -87,7 +103,8 @@ class Net(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 6, self.grid, self.grid))
+        #x = x.view(1, x.size(0), -1)
+        #x, self.h = self.rnn_layers(x, self.h)
+        #x = x.view((x.size(1), 6, self.grid, self.grid))
+        x = x.view(x.size(0), 6, self.grid, self.grid)
         return x
