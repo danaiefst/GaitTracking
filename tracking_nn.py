@@ -13,62 +13,36 @@ class Net(Module):
         self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
-            Conv2d(1, 32, kernel_size=7, stride=2),
+            Conv2d(1, 16, kernel_size=7, stride=2),
             Dropout(0.5),
-            BatchNorm2d(32),
+            BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3, padding=1),
+            Conv2d(16, 16, kernel_size=3),
             Dropout(0.5),
-            BatchNorm2d(64),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(64, 32, kernel_size=1),
-            Dropout(0.5),
-            BatchNorm2d(32),
-            ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3, padding=1),
-            Dropout(0.5),
-            BatchNorm2d(64),
+            BatchNorm2d(16),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(64, 32, kernel_size=1),
+            Conv2d(16, 16, kernel_size=3),
             Dropout(0.5),
-            BatchNorm2d(32),
+            BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3, padding=1),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(16, 16, kernel_size=3),
             Dropout(0.5),
-            BatchNorm2d(64),
+            BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(64, 32, kernel_size=1),
+            Conv2d(16, 16, kernel_size=3),
             Dropout(0.5),
-            BatchNorm2d(32),
-            ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3),
-            Dropout(0.5),
-            BatchNorm2d(64),
-            ReLU(inplace=True),
-            Conv2d(64, 32, kernel_size=1),
-            Dropout(0.5),
-            BatchNorm2d(32),
-            ReLU(inplace=True),
-            Conv2d(32, 64, kernel_size=3),
-            Dropout(0.5),
-            BatchNorm2d(64),
-            ReLU(inplace=True),
-            Conv2d(64, 64, kernel_size=3),
-            Dropout(0.5),
-            BatchNorm2d(64),
+            BatchNorm2d(16),
             ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
-            Linear(3136, 1024),
-            Dropout(0.5),
-            ReLU(inplace=True),
-            Linear(1024, 294),         #294 = 6*7*7
+            Linear(784, 294), #294 = 6*7*7
             Dropout(0.5),
             ReLU(inplace=True)
         )
+
 
         self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
 
@@ -91,9 +65,9 @@ class Net(Module):
         #print(y, detect_cell1, detect_cell2)
         pos1 = detect_cell1.double() + y_h[torch.arange(p1.size(0)), 1:3, detect_cell1[:, 0], detect_cell1[:, 1]]
         pos1h = y[:, 0, :2] + y[:, 0, 2:]
-        pos2 = detect_cell2.double() + y_h[torch.arange(p2.size(0)), 1:3, detect_cell2[:, 0], detect_cell2[:, 1]]
+        pos2 = detect_cell2.double() + y_h[torch.arange(p2.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]]
         pos2h = y[:, 1, :2] + y[:, 1, 2:]
-        print(((pos1 - pos1h) ** 2).sum(), ((pos2 - pos2h) ** 2).sum())
+        #print(((pos1 - pos1h) ** 2).sum(), ((pos2 - pos2h) ** 2).sum())
         detect_loss = ((pos1 - pos1h) ** 2).sum() + ((pos2 - pos2h) ** 2).sum()
         return prob_loss + 2 * detect_loss
 
