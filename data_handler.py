@@ -10,7 +10,7 @@ max_width = 0.5
 min_width = -0.5
 img_side = 112
 grid = 7
-
+shifts = [(-15, 10), (-10, -10), (-10, 10), (-5, 10), (-7, 5), (2, 10)]
 torch.set_default_dtype(torch.double)
 
 
@@ -102,21 +102,14 @@ def print_data(img, labels):
     #plt.clf()
 
 def transformi(img):
-    shifts = [(-15, 10), (-10, -10)]
-    rotations = [10, -10]
     ret = []
     for s in shifts:
         new_img = shifti(img, *s)
-        ret.append(new_img)
-    for r in rotations:
-        new_img = rotatei(img, r)
         ret.append(new_img)
     ret.append(mirrori(img))
     return ret
 
 def transforml(label):
-    shifts = [(-15, 10), (-10, -10)]
-    rotations = [10, -10]
     ret = []
     for s in shifts:
         new_label = shiftl(label, *s)
@@ -124,12 +117,6 @@ def transforml(label):
             ret.append(new_label)
         else:
             print("Out of bounds", s)
-    for r in rotations:
-        new_label = rotatel(label, r)
-        if new_label[0][0] <= 6 and new_label[0][1] <= 6 and new_label[1][0] <= 6 and new_label[1][1] <= 6:
-            ret.append(new_label)
-        else:
-            print("Out of bounds", r)
     ret.append(mirrorl(label))
     return ret
 

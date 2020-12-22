@@ -54,7 +54,6 @@ class Net(Module):
             ReLU(inplace=True)
         )
 
-
         self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
 
     def loss(self, y_h, y):
@@ -78,9 +77,12 @@ class Net(Module):
         pos1h = y[:, 0, :2] + y[:, 0, 2:]
         pos2 = detect_cell2.double() + y_h[torch.arange(p2.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]]
         pos2h = y[:, 1, :2] + y[:, 1, 2:]
-        #print(((pos1 - pos1h) ** 2).sum(), ((pos2 - pos2h) ** 2).sum())
-        detect_loss = ((pos1 - pos1h) ** 2).sum() + ((pos2 - pos2h) ** 2).sum()
-        return prob_loss + 2 * detect_loss
+        #print(((pos1 - pos1h) ** 2).sum().item(), ((pos2 - pos2h) ** 2).sum().item())
+        detect_loss1 = ((pos1 - pos1h) ** 2).sum()
+        detect_loss2 = ((pos2 - pos2h) ** 2).sum()
+        detect_loss = detect_loss1 + detect_loss2
+        punish_loss = abs(detect_loss1 - detect_loss2)
+        return prob_loss + 2 * detect_loss + punish_loss
 
 
     def forward(self, x):

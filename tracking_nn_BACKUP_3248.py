@@ -16,6 +16,26 @@ class Net(Module):
             Conv2d(1, 16, kernel_size=7, stride=2),
             Dropout(0.5),
             BatchNorm2d(16),
+<<<<<<< HEAD
+            ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(16, 16, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(16, 16, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(16),
+=======
             ReLU(inplace=True),
             Conv2d(16, 32, kernel_size=3),
             Dropout(0.5),
@@ -42,14 +62,19 @@ class Net(Module):
             Conv2d(32, 32, kernel_size=3),
             Dropout(0.5),
             BatchNorm2d(32),
+>>>>>>> 518e92f7cbea7fd871af6cada7ce5d1f5070bfeb
             ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
+<<<<<<< HEAD
+            Linear(784, 294), #294 = 6*7*7
+=======
             Linear(1568, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),         #294 = 6*7*7
+>>>>>>> 518e92f7cbea7fd871af6cada7ce5d1f5070bfeb
             Dropout(0.5),
             ReLU(inplace=True)
         )
@@ -78,9 +103,18 @@ class Net(Module):
         pos1h = y[:, 0, :2] + y[:, 0, 2:]
         pos2 = detect_cell2.double() + y_h[torch.arange(p2.size(0)), 4:, detect_cell2[:, 0], detect_cell2[:, 1]]
         pos2h = y[:, 1, :2] + y[:, 1, 2:]
+<<<<<<< HEAD
         #print(((pos1 - pos1h) ** 2).sum(), ((pos2 - pos2h) ** 2).sum())
         detect_loss = ((pos1 - pos1h) ** 2).sum() + ((pos2 - pos2h) ** 2).sum()
         return prob_loss + 2 * detect_loss
+=======
+        #print(((pos1 - pos1h) ** 2).sum().item(), ((pos2 - pos2h) ** 2).sum().item())
+        detect_loss1 = ((pos1 - pos1h) ** 2).sum()
+        detect_loss2 = ((pos2 - pos2h) ** 2).sum()
+        detect_loss = detect_loss1 + detect_loss2
+        punish_loss = abs(detect_loss1 - detect_loss2)
+        return prob_loss + 2 * detect_loss + punish_loss
+>>>>>>> 518e92f7cbea7fd871af6cada7ce5d1f5070bfeb
 
 
     def forward(self, x):
