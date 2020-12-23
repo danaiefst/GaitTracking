@@ -18,7 +18,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 epochs = 1000
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
@@ -27,7 +27,7 @@ print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
     if epoch >= 15:
-        optimizer = Adam(model.parameters(), lr = 10 ** (-4))
+        optimizer = Adam(model.parameters(), lr = 10 ** (-5))
     for i in range(len(train_set_x)):
         #print("Training batch", i, "/", len(train_set_x))
         model.init_hidden(1)
@@ -37,7 +37,7 @@ for epoch in range(epochs):
         loss = model.loss(outputs, labels)
         loss.backward()
         optimizer.step()
-        running_loss += loss.item()
+        running_loss += loss.item() / train_set_x[i].shape[0]
     print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
     running_loss = 0
     if epoch >= patience:
@@ -47,7 +47,7 @@ for epoch in range(epochs):
                 input = i.to(device)
                 label = j.to(device)
                 output = model.forward(input)
-                acc += model.loss(output, label)
+                acc += model.loss(output, label) / i.shape[0]
             if acc < best_acc:
                 best_acc = acc
                 print("Saving model with acc", acc / len(val_set_x))
