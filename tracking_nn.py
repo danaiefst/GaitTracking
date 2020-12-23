@@ -89,8 +89,8 @@ class Net(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 6, self.grid, self.grid))
-        #x = x.view(x.size(0), 6, self.grid, self.grid)
+        #x = x.view(1, x.size(0), -1)
+        #x, self.h = self.rnn_layers(x, self.h)
+        #x = x.view((x.size(1), 6, self.grid, self.grid))
+        x = x.view(x.size(0), 6, self.grid, self.grid)
         return x
