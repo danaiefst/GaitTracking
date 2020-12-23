@@ -93,13 +93,13 @@ def rotatel(labels, angle):
 def print_data(img, labels):
     image = img.detach().clone()
     x1, y1, x2, y2 = find_center(labels)
-    image[x1, y1] = 0.5
-    image[x2, y2] = 0.5
+    image[x1, y1] = 0.2
+    image[x2, y2] = 0.8
     plt.imshow(image)
-    plt.show()
-    #plt.show(block=False)
-    #plt.pause(0.1)
-    #plt.clf()
+    #plt.show()
+    plt.show(block=False)
+    plt.pause(0.5)
+    plt.clf()
 
 def transformi(img):
     ret = []

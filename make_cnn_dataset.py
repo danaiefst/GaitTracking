@@ -77,7 +77,7 @@ for data_path in range(len(data_paths)):
                #print_data(img, tag)
                file += 1
             i += 1
-
+    print(file)
     np.random.seed(0)
     r = np.random.randint(0, len(new_points_r) - 1, 1000)
     l = np.random.randint(0, len(new_points_l) - 1, 1000)
@@ -104,5 +104,5 @@ for data_path in range(len(data_paths)):
                 tag = torch.tensor([label1, label2], dtype=torch.double)
             torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
             torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
-            #print_data(img, tag)
+            print_data(img, tag)
             file += 1
