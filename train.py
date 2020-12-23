@@ -9,16 +9,16 @@ data_paths = ["/gpu-data/athdom/p1/2.a"]
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 model = tracking_nn.Net(device).to(device)
-data = data_handler.LegDataLoader()
+data = data_handler.LegDataLoader(cnn = 1)
 print("Loading dataset...")
-train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(64)
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(16)
 
 
 # Train the nn
 
 epochs = 1000
 patience = 1
-learning_rate = 0.0001
+learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
@@ -26,8 +26,8 @@ save_path = "/home/athdom/GaitTracking/model.pt"
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch >= 7:
-        optimizer = Adam(model.parameters(), lr = 5 * 10 ** (-5))
+    if epoch >= 15:
+        optimizer = Adam(model.parameters(), lr = 10 ** (-4))
     for i in range(len(train_set_x)):
         #print("Training batch", i, "/", len(train_set_x))
         model.init_hidden(1)

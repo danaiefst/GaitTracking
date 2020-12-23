@@ -123,13 +123,17 @@ def transforml(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
+    def __init__(self, cnn = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
         self.data_paths = data_paths
+        self.cnn = cnn
 
     def load(self, batch_size = 64):
         self.data = []
         for path in self.data_paths:
-            self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
+            if self.cnn:
+                self.data.append(sorted(os.listdir(path + "/data_cnn"), key = lambda a: int(a.split(".")[0])))
+            else:
+                self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
         train_set_x = []
         train_set_y = []
         val_set_x = []
@@ -152,12 +156,20 @@ class LegDataLoader():
                     #print(i, prev_frame, frame_i)
                     vid_batchd.append(torch.stack(batch_data, dim = 0))
                     vid_batchl.append(torch.stack(batch_labels, dim = 0))
-                    batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
-                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
+                    if self.cnn:
+                        batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
+                        batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
+                    else:
+                        batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
+                        batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                     i = batch_size - 1
                 else:
-                    batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
-                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
+                    if self.cnn:
+                        batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
+                        batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
+                    else:
+                        batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
+                        batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
                     i -= 1
                 prev_frame = frame_i
             if batch_data != []:
