@@ -18,28 +18,24 @@ class Net(Module):
             Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 32, kernel_size=4),
+            Conv2d(16, 32, kernel_size=3),
             BatchNorm2d(32),
             Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=5),
+            Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
             Dropout(0.5),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=5),
-            BatchNorm2d(32),
-            Dropout(0.5),
-            ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=5),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
             Dropout(0.5),
             ReLU(inplace=True),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
             Dropout(0.5),
-            ReLU(inplace=True)
-
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
