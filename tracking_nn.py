@@ -46,8 +46,8 @@ class Net(Module):
             Linear(1568, 512),
             Dropout(0.5),
             ReLU(inplace=True),
-            Linear(512, 384),
-            Dropout(0.5),        #384 = 6*8*8
+            Linear(512, 294),
+            Dropout(0.5),        #384 = 6*7*7
             Sigmoid(),
         )
 
