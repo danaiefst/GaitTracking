@@ -18,16 +18,30 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 epochs = 1000
 patience = 1
-learning_rate = 0.0001
+learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
 
+def eucl_dist(out, labels):
+    ret = 0
+    for i in range(out.shape[0]):
+        yh = out[i]
+        p1_h = yh[0, :, :]
+        p2_h = yh[3, :, :]
+        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
+        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
+        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
+        ret += ((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
+    return ret / out.shape[0] / 2
+
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch >= 15:
-        optimizer = Adam(model.parameters(), lr = 10 ** (-5))
+    if epoch % 10 == 0:
+        learning_rate *= 0.1
+        optimizer = Adam(model.parameters(), lr = learning_rate
     for i in range(len(train_set_x)):
         #print("Training batch", i, "/", len(train_set_x))
         model.init_hidden(1)
@@ -43,12 +57,14 @@ for epoch in range(epochs):
     if epoch >= patience:
         with torch.no_grad():
             acc = 0
+            dist = 0
             for i, j in zip(val_set_x, val_set_y):
                 input = i.to(device)
                 label = j.to(device)
                 output = model.forward(input)
                 acc += model.loss(output, label) / i.shape[0]
+                dist += eucl_dist(output, label)
             if acc < best_acc:
                 best_acc = acc
-                print("Saving model with acc", acc / len(val_set_x))
+                print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x))
                 torch.save(model.state_dict(), save_path)
