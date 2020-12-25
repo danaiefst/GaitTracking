@@ -69,6 +69,8 @@ class Net(Module):
 
         detect_loss = ((rlegh[:, 0] + rlegx.double() - y[:, 0, 0] - y[:, 0, 2]) ** 2 + (rlegh[:, 1] + rlegy.double() - y[:, 0, 1] - y[:, 0, 3]) ** 2 + (llegh[:, 0] + llegx.double() - y[:, 1, 0] - y[:, 1, 2]) ** 2 + (llegh[:, 1] + llegy.double() - y[:, 1, 1] - y[:, 1, 3]) ** 2).sum()
 
+        return prob_loss + detect_loss
+
     def forward(self, x):
         x = x.to(torch.double)
         x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
