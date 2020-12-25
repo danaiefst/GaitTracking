@@ -63,7 +63,7 @@ class Net(Module):
         rlegx, rlegy = rposh // self.grid, rposh % self.grid
         rlegh = yh[torch.arange(yh.shape[0]), 1:3, rlegx, rlegy]
 
-        lposh = prob[:, 3, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        lposh = prob[:, 1, :, :].view(prob.shape[0], -1).argmax(axis=1)
         llegx, llegy = lposh // self.grid, lposh % self.grid
         llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
 
