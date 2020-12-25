@@ -52,11 +52,11 @@ class Net(Module):
 
     def loss(self, yh, y):
         #Probability loss
-        prob = yh[:, [0, 3], :, :]
-        probh = torch.zeros(y_h.shape[0], 2, self.grid, self.grid)
-        probh[torch.arange(y.shape[0]), 0, y[:, 0, 0], y[:, 0, 1]] = 1
-        probh[torch.arange(y.shape[0]), 1, y[:, 1, 0], y[:, 1, 1]] = 1
-        prob_loss = torch.abs(prob - probh).sum()
+        probh = yh[:, [0, 3], :, :]
+        prob = torch.zeros(y.shape[0], 2, self.grid, self.grid)
+        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0], y[:, 0, 1]] = 1
+        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0], y[:, 1, 1]] = 1
+        prob_loss = ((prob - probh) ** 2).sum()
 
         #Detection loss
         rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0], y[:, 0, 1]]
