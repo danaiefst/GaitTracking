@@ -59,11 +59,11 @@ class Net(Module):
         prob_loss = ((prob - probh) ** 2).sum()
 
         #Detection loss
-        rposh = prob[:, 0, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        rposh = probh[:, 0, :, :].view(prob.shape[0], -1).argmax(axis=1)
         rlegx, rlegy = (rposh // self.grid).to(self.device), (rposh % self.grid).to(self.device)
         rlegh = yh[torch.arange(yh.shape[0]), 1:3, rlegx, rlegy]
 
-        lposh = prob[:, 1, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        lposh = probh[:, 1, :, :].view(prob.shape[0], -1).argmax(axis=1)
         llegx, llegy = (lposh // self.grid).to(self.device), (lposh % self.grid).to(self.device)
         llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
 
