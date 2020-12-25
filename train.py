@@ -16,6 +16,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 # Train the nn
 
+grid = 7
 epochs = 1000
 patience = 1
 learning_rate = 0.001

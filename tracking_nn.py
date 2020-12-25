@@ -52,18 +52,22 @@ class Net(Module):
 
     def loss(self, yh, y):
         #Probability loss
-        probh = yh[:, [0, 3], :, :]
-        prob = torch.zeros(y.shape[0], 2, self.grid, self.grid)
-        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
-        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = 0.5 * ((prob - probh) ** 2).sum() + 0.5 *
+        prob = yh[:, [0, 3], :, :]
+        probh = torch.zeros(y_h.shape[0], 2, self.grid, self.grid).to(self.device)
+        probh[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
+        probh[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
+        prob_loss = ((prob - probh) ** 2).sum()
 
         #Detection loss
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
-        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
-        detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum()
+        rposh = prob[:, 0, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        rlegx, rlegy = rposh // self.grid, rposh % self.grid
+        rlegh = yh[torch.arange(yh.shape[0]), 1:3, rlegx, rlegy]
 
-        return prob_loss + detect_loss
+        lposh = prob[:, 3, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        llegx, llegy = lposh // self.grid, lposh % self.grid
+        llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
+
+        detect_loss = ((rlegh[:, 0] + rlegx - y[:, 0, 0] - y[:, 0, 2]) ** 2 + (rlegh[:, 1] + rlegy - y[:, 0, 1] - y[:, 0, 3]) ** 2 + (llegh[:, 0] + llegx - y[:, 1, 0] - y[:, 1, 2]) ** 2 + (llegh[:, 1] + llegy - y[:, 1, 1] - y[:, 1, 3]) ** 2).sum()
 
     def forward(self, x):
         x = x.to(torch.double)
