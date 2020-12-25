@@ -61,7 +61,7 @@ class Net(Module):
         p2 = torch.zeros(p2_h.shape)
         p1[torch.arange(y.shape[0]), y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
         p2[torch.arange(y.shape[0]), y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((p1.to(self.device) - p1_h) ** 2).sum() + ((p2.to(self.device) - p2_h) ** 2).sum()
+        prob_loss = abs(p1.to(self.device) - p1_h).sum() + abs(p2.to(self.device) - p2_h).sum()
         detect_cell1 = p1_h.reshape((p1.size(0), -1)).argmax(axis = 1)
         detect_cell2 = p2_h.reshape((p2.size(0), -1)).argmax(axis = 1)
         detect_cell1 = torch.stack((detect_cell1 // self.grid, detect_cell1 % self.grid), dim = 1).to(self.device)
