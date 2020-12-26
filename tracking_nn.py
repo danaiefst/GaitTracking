@@ -23,26 +23,26 @@ class Net(Module):
             Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(32, 64, kernel_size=3),
+            BatchNorm2d(64),
             Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
             Dropout(0.5),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
             Dropout(0.5),
             ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1568, 512),
+            Linear(3136, 1024),
             Dropout(0.5),
             ReLU(inplace=True),
-            Linear(512, 294),
+            Linear(1024, 294),
             Dropout(0.5),        #384 = 6*7*7
             Sigmoid(),
         )
@@ -68,7 +68,7 @@ class Net(Module):
         llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
 
         detect_loss = ((rlegh[:, 0] + rlegx.double() - y[:, 0, 0] - y[:, 0, 2]) ** 2 + (rlegh[:, 1] + rlegy.double() - y[:, 0, 1] - y[:, 0, 3]) ** 2 + (llegh[:, 0] + llegx.double() - y[:, 1, 0] - y[:, 1, 2]) ** 2 + (llegh[:, 1] + llegy.double() - y[:, 1, 1] - y[:, 1, 3]) ** 2).sum()
-
+        print(prob_loss, detect_loss)
         return prob_loss + detect_loss
 
     def forward(self, x):

@@ -11,14 +11,15 @@ def print_data(img, labels1, labels2):
     image = img.detach().clone()
     x1, y1, x2, y2 = data_handler.find_center(labels1)
     image[x1, y1] = 0.3
-    image[x2, y2] = 0.3
+    image[x2, y2] = 0.6
     x1, y1, x2, y2 = data_handler.find_center(labels2)
-    image[x1, y1] = 0.6
+    image[x1, y1] = 0.3
     image[x2, y2] = 0.6
     plt.imshow(image)
-    plt.show(block=False)
-    plt.pause(0.1)
-    plt.clf()
+    plt.show()
+    #plt.show(block=False)
+    #plt.pause(0.1)
+    #plt.clf()
 
 def check_out(batch, out, label):
     for i in range(out.shape[0]):
@@ -47,9 +48,9 @@ def eucl_dist(out, labels):
 
 
 data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-data = data_handler.LegDataLoader(data_paths)
+data = data_handler.LegDataLoader(data_paths = data_paths, cnn=1)
 print("Loading dataset...")
-tx, ty, vx, vy, _, _ = data.load(64)
+tx, ty, vx, vy, _, _ = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 net = tracking_nn.Net(device)
@@ -65,5 +66,5 @@ for i in range(len(vx)):
         out = net(batch)
         #print(net.loss(out, val_set_y[i]))
         dist += eucl_dist(out, vy[i].to(device))
-        #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
+        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 print("Mean dist:", dist / len(vx))
