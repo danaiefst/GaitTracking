@@ -1,6 +1,5 @@
 import torch
 import os
-from scipy import ndimage
 from matplotlib import pyplot as plt
 from math import pi, sin, cos
 
