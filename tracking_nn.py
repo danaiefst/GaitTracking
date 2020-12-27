@@ -67,7 +67,7 @@ class Net(Module):
             ReLU(inplace=True),
             Linear(1024, 294),         #294 = 6*7*7
             Dropout(0.5),
-            ReLU(inplace=True)
+            Sigmoid()
         )
 
 
