@@ -1,4 +1,4 @@
-import data_handler, classification
+import data_handler, tracking_nn
 import torch
 from torch.optim import Adam
 
@@ -8,8 +8,8 @@ data_paths = ["/gpu-data/athdom/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-model = classification.Net(device).to(device)
-data = data_handler.LegDataLoader(data_paths = data_paths, cnn = 1)
+model = tracking.Net(device).to(device)
+data = data_handler.LegDataLoader(cnn = 1)
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
@@ -25,14 +25,17 @@ best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
 
 def eucl_dist(out, labels):
-    #Probability loss
-    probh = out.to(device)
-    prob = torch.zeros(labels.shape[0], 2, grid, grid).to(device)
-    prob[torch.arange(labels.shape[0]), 0, labels[:, 0, 0].long(), labels[:, 0, 1].long()] = 1
-    prob[torch.arange(labels.shape[0]), 1, labels[:, 1, 0].long(), labels[:, 1, 1].long()] = 1
-    prob_loss = ((prob - probh) ** 2).sum()
-
-    return prob_loss / out.shape[0] / 2
+    ret = 0
+    for i in range(out.shape[0]):
+        yh = out[i]
+        p1_h = yh[0, :, :]
+        p2_h = yh[3, :, :]
+        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
+        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
+        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
+        ret += torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
+    return ret / out.shape[0] / 2
 
 print("Started training...")
 for epoch in range(epochs):
