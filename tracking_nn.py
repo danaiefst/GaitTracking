@@ -7,7 +7,7 @@ class Net(Module):
     def init_hidden(self, batch_size):
         self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
 
-   def __init__(self, device):
+    def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 7
         self.num_of_layers = 1
