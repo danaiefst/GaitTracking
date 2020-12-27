@@ -26,8 +26,8 @@ save_path = "/home/athdom/GaitTracking/model.pt"
 
 def eucl_dist(out, labels):
     #Probability loss
-    probh = out
-    prob = torch.zeros(labels.shape[0], 2, grid, grid)
+    probh = out.to(device)
+    prob = torch.zeros(labels.shape[0], 2, grid, grid).to(device)
     prob[torch.arange(labels.shape[0]), 0, labels[:, 0, 0].long(), labels[:, 0, 1].long()] = 1
     prob[torch.arange(labels.shape[0]), 1, labels[:, 1, 0].long(), labels[:, 1, 1].long()] = 1
     prob_loss = ((prob - probh) ** 2).sum()
