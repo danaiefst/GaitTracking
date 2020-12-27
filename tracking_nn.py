@@ -13,14 +13,19 @@ class Net(Module):
         self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
-            Conv2d(1, 16, kernel_size=7),
+            Conv2d(1, 16, kernel_size=7, stride=2),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 32, kernel_size=3),
+            Conv2d(16, 32, kernel_size=3, padding = 2),
             BatchNorm2d(32),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(32, 32, kernel_size=3, padding = 1),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 32, kernel_size=3),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
             ReLU(inplace=True),

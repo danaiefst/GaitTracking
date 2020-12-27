@@ -70,5 +70,5 @@ for i in range(len(vx)):
         d1, d2 = eucl_dist(out, vy[i].to(device))
         dist1 += d1
         dist2 += d2
-        #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
+        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 print("Mean dist:", dist1 / len(vx), dist2 / len(vx))
