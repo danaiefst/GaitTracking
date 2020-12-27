@@ -36,7 +36,7 @@ class Net(Module):
         prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
         prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
 
-        return prob_loss + detect_loss
+        return prob_loss
 
     def forward(self, x):
         x = x.to(torch.double)
