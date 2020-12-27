@@ -32,7 +32,7 @@ def eucl_dist(out, labels):
     prob[torch.arange(labels.shape[0]), 1, labels[:, 1, 0].long(), labels[:, 1, 1].long()] = 1
     prob_loss = ((prob - probh) ** 2).sum()
 
-    return prob_loss
+    return prob_loss / out.shape[0] / 2
 
 print("Started training...")
 for epoch in range(epochs):
