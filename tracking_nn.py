@@ -7,44 +7,67 @@ class Net(Module):
     def init_hidden(self, batch_size):
         self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
 
-    def __init__(self, device):
+   def __init__(self, device):
         super(Net, self).__init__()
         self.grid = 7
         self.num_of_layers = 1
         self.device = device
         self.cnn_layers = Sequential(
-            Conv2d(1, 16, kernel_size=7),
-            BatchNorm2d(16),
+            Conv2d(1, 32, kernel_size=7, stride=2),
             Dropout(0.5),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 32, kernel_size=3),
             BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3, padding=1),
             Dropout(0.5),
+            BatchNorm2d(64),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3, padding=1),
+            Dropout(0.5),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3, padding=1),
+            Dropout(0.5),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
             Conv2d(32, 64, kernel_size=3),
-            BatchNorm2d(64),
             Dropout(0.5),
+            BatchNorm2d(64),
             ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(64, 32, kernel_size=1),
+            Dropout(0.5),
+            BatchNorm2d(32),
+            ReLU(inplace=True),
+            Conv2d(32, 64, kernel_size=3),
+            Dropout(0.5),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
             Conv2d(64, 64, kernel_size=3),
-            BatchNorm2d(64),
             Dropout(0.5),
-            ReLU(inplace=True),
-            Conv2d(64, 64, kernel_size=3),
             BatchNorm2d(64),
-            Dropout(0.5),
-            ReLU(inplace=True),
+            ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
             Linear(3136, 1024),
             Dropout(0.5),
             ReLU(inplace=True),
-            Linear(1024, 294),
-            Dropout(0.5),        #384 = 6*7*7
-            Sigmoid(),
+            Linear(1024, 294),         #294 = 6*7*7
+            Dropout(0.5),
+            ReLU(inplace=True)
         )
 
 
