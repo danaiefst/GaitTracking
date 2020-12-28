@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import data_handler
 from scipy.ndimage import rotate
 import tracking_nn
+import time
 
 grid = 7
 
@@ -72,24 +73,26 @@ def median(l):
 
 
 data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-data = data_handler.LegDataLoader(data_paths = data_paths)
+data = data_handler.LegDataLoader(data_paths = data_paths, cnn=1)
 print("Loading dataset...")
 tx, ty, vx, vy, _, _ = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
-net = tracking_nn.Net(device)
+net = tracking_nn.CNN(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/cnn_model.pt", map_location=device))
 all_dists = []
 for i in range(len(vx)):
     with torch.no_grad():
-        net.init_hidden(1)
+        #net.init_hidden(1)
         batch = vx[i].to(device)
         print("Calculating validation batch", i)
+        t = time.time()
         out = net(batch)
+        print("Time taken:", time.time() - t)
         all_dists.extend(eucl_dist(out, vy[i].to(device)))
-        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
+        #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / 7, "Max dist:", max(all_dists) / 7, "Median dist:", median(all_dists) / 7)
