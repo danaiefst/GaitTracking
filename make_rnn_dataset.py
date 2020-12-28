@@ -19,6 +19,11 @@ for data_path in range(len(data_paths)):
     valid = open("valid.txt", "r")
     laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
     centers = np.genfromtxt("centers.csv", delimiter = ",")
+    items = os.listdir(data_paths[data_path])
+    if "labels" not in items:
+        os.mkdir(os.path.join(data_paths[data_path], "labels"))
+    if "data" not in items:
+        os.mkdir(os.path.join(data_paths[data_path], "data"))
 
     max_height = 1.2
     min_height = 0.1
