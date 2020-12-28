@@ -4,9 +4,10 @@ from torch.nn import Sigmoid, LSTM, Linear, ReLU, CrossEntropyLoss, Sequential, 
 torch.set_default_dtype(torch.double)
 
 class CNN(Module):
-    def __init__(self):
-        super(Net, self).__init__()
-
+    def __init__(self, device):
+        super(CNN, self).__init__()
+        self.grid = 7
+        self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7, stride=2),
             BatchNorm2d(16),
@@ -71,7 +72,7 @@ class RNN(Module):
         self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
 
     def __init__(self, device):
-        super(Net, self).__init__()
+        super(RNN, self).__init__()
         self.grid = 7
         self.num_of_layers = 1
         self.device = device
