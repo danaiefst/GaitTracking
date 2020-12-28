@@ -130,13 +130,13 @@ class Net(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
+            #Conv2d(16, 16, kernel_size=3),
+            #BatchNorm2d(16),
+            #ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 512),
+            Linear(1296, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #384 = 6*7*7
