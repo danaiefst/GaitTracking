@@ -81,18 +81,18 @@ print(device)
 net = tracking_nn.CNN(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/cnn_model.pt", map_location=device))
 all_dists = []
 for i in range(len(vx)):
     with torch.no_grad():
-        net.init_hidden(1)
+        #net.init_hidden(1)
         batch = vx[i].to(device)
         print("Calculating validation batch", i)
         t = time.time()
         out = net(batch)
         print("Time taken:", time.time() - t)
         all_dists.extend(eucl_dist(out, vy[i].to(device)))
-        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
+        #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / 7, "Max dist:", max(all_dists) / 7, "Median dist:", median(all_dists) / 7)

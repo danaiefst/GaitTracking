@@ -33,3 +33,4 @@ p18/3.a/labels_cnn/*
 model*
 *.save
 *.pyc
+cnn_model.pt
