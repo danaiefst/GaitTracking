@@ -44,7 +44,7 @@ for epoch in range(epochs):
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
-        model.init_hidden(train_set_x[i].shape[0])
+        model.init_hidden(1)
         #print("Training batch", i, "/", len(train_set_x))
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
@@ -60,7 +60,7 @@ for epoch in range(epochs):
             acc = 0
             dist = 0
             for i, j in zip(val_set_x, val_set_y):
-                model.init_hidden(val_set_x[i].shape[0])
+                model.init_hidden(1)
                 input = i.to(device)
                 label = j.to(device)
                 output = model.forward(input)

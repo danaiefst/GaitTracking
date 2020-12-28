@@ -72,20 +72,20 @@ def median(l):
         return l[len(l) // 2]
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p11/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths = data_paths, cnn=1)
 print("Loading dataset...")
 tx, ty, vx, vy, _, _ = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
-net = tracking_nn.CNN(device)
+net = tracking_nn.Net(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/cnn_model.pt", map_location=device))
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/best_model.pt", map_location=device))
 all_dists = []
 for i in range(len(vx)):
     with torch.no_grad():
-        #net.init_hidden(1)
+        net.init_hidden(1)
         batch = vx[i].to(device)
         print("Calculating validation batch", i)
         t = time.time()
