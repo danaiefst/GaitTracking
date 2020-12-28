@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 
 #data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths1=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/2.a", "/home/athdom/GaitTracking/p18/3.a"]
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]
-data_paths1=["/home/danai/Desktop/GaitTracking/p1/2.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p11/2.a"]
+data_paths1=["/home/danai/Desktop/GaitTracking/p11/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 #data_paths1=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
@@ -81,10 +81,8 @@ for data_path in range(len(data_paths)):
                tag = torch.tensor([[int(points_r[i][2] / img_side * grid), int(points_r[i][3] / img_side * grid), (points_r[i][2] / img_side * grid) % 1, (points_r[i][3] / img_side * grid) % 1], [int(points_l[i][2] / img_side * grid), int(points_l[i][3] / img_side * grid), (points_l[i][2] / img_side * grid) % 1, (points_l[i][3] / img_side * grid) % 1]], dtype=torch.double)
                torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
                torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
-               #print_data(img, tag)
                file += 1
             i += 1
-    print(file)
     np.random.seed(0)
     r = np.random.randint(0, len(new_points_r) - 1, 1000)
     l = np.random.randint(0, len(new_points_l) - 1, 1000)
@@ -111,5 +109,4 @@ for data_path in range(len(data_paths)):
                 tag = torch.tensor([label1, label2], dtype=torch.double)
             torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
             torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
-            #print_data(img, tag)
             file += 1

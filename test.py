@@ -72,7 +72,7 @@ def median(l):
         return l[len(l) // 2]
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p11/2.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths = data_paths, cnn=1)
 print("Loading dataset...")
 tx, ty, vx, vy, _, _ = data.load(32)
@@ -90,7 +90,7 @@ for i in range(len(vx)):
         print("Calculating validation batch", i)
         t = time.time()
         out = net(batch)
-        print("Time taken:", time.time() - t)
+        #print("Time taken:", time.time() - t)
         all_dists.extend(eucl_dist(out, vy[i].to(device)))
         #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 
