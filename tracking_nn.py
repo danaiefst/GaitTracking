@@ -28,7 +28,7 @@ class CNN(Module):
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
-            #ReLU(inplace=True),
+            ReLU(inplace=True),
             #Conv2d(16, 16, kernel_size=3),
             #BatchNorm2d(16),
             #ReLU(inplace=True),
