@@ -176,12 +176,20 @@ class LegDataLoader():
                 #print(i, prev_frame, frame_i)
                 vid_batchd.append(torch.stack(batch_data, dim = 0))
                 vid_batchl.append(torch.stack(batch_labels, dim = 0))
-                batch_data = [torch.load(self.data[vid_i] + "/" + frame)]
-                batch_labels = [torch.load(self.data[vid_i] + "/" + frame)]
+                if self.cnn:
+                    batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
+                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
+                else:
+                    batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
+                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                 i = batch_size - 1
             else:
-                batch_data.append(torch.load(self.data[vid_i] + "/" + frame))
-                batch_labels.append(torch.load(self.data[vid_i] + "/" + frame))
+                if self.cnn:
+                    batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
+                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
+                else:
+                    batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
+                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
                 i -= 1
             prev_frame = frame_i
         if batch_data != []:
@@ -246,6 +254,7 @@ class LegDataLoader():
 
     def load1(self, batch_size):
         self.data = []
+
         for path in self.data_paths:
             if self.cnn:
                 self.data.append(sorted(os.listdir(path + "/data_cnn"), key = lambda a: int(a.split(".")[0])))
