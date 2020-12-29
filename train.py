@@ -8,7 +8,7 @@ data_paths = ["/gpu-data/athdom/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-model = tracking_nn.Net(device).to(device)
+model = tracking_nn.CNN(device).to(device)
 data = data_handler.LegDataLoader()
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
@@ -22,7 +22,7 @@ patience = 1
 learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
-save_path = "/home/athdom/GaitTracking/model.pt"
+save_path = "/home/athdom/GaitTracking/cnn_model.pt"
 
 def eucl_dist(out, labels):
     ret = 0
@@ -40,11 +40,11 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 10 == 0:
+    if epoch % 15 == 0:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
-        model.init_hidden(1)
+        #model.init_hidden(1)
         #print("Training batch", i, "/", len(train_set_x))
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
@@ -60,7 +60,7 @@ for epoch in range(epochs):
             acc = 0
             dist = 0
             for i, j in zip(val_set_x, val_set_y):
-                model.init_hidden(1)
+                #model.init_hidden(1)
                 input = i.to(device)
                 label = j.to(device)
                 output = model.forward(input)
