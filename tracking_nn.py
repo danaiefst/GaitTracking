@@ -29,13 +29,13 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 512),
+            Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #384 = 6*7*7
@@ -56,7 +56,7 @@ class CNN(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return 10 * prob_loss + detect_loss
+        return prob_loss + detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
@@ -130,13 +130,13 @@ class Net(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 512),
+            Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #384 = 6*7*7
@@ -160,7 +160,7 @@ class Net(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return 10 * prob_loss + detect_loss
+        return prob_loss + detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
