@@ -89,16 +89,18 @@ def rotatel(labels, angle):
     new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]], dtype=torch.double)
     return new_labels
 
-def print_data(img, labels):
+def print_data(img, labels, fast=0):
     image = img.detach().clone()
     x1, y1, x2, y2 = find_center(labels)
     image[x1, y1] = 0.2
     image[x2, y2] = 0.8
     plt.imshow(image)
-    #plt.show()
-    plt.show(block=False)
-    plt.pause(0.5)
-    plt.clf()
+    if fast:
+        plt.show(block=False)
+        plt.pause(fast)
+        plt.clf()
+    else:
+        plt.show()
 
 def transformi(img):
     ret = []

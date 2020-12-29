@@ -62,11 +62,12 @@ for data_path in range(len(data_paths)):
         end = int(end)
         while i <= end:
             torch.save(torch.tensor(images[i], dtype=torch.double), "{}/data/{}.pt".format(data_paths[data_path], i))
-            transformed = transformi(torch.tensor(images[i], dtype=torch.double))
-            for j in range(len(transformed)):
-                torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
-            torch.save(torch.tensor(tags[i], dtype=torch.double), "{}/labels/{}.pt".format(data_paths[data_path], i))
-            transformed = transforml(tags[i])
-            for j in range(len(transformed)):
-                torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+            if data_path < len(data_paths) - 1:
+                transformed = transformi(torch.tensor(images[i], dtype=torch.double))
+                for j in range(len(transformed)):
+                    torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+                torch.save(torch.tensor(tags[i], dtype=torch.double), "{}/labels/{}.pt".format(data_paths[data_path], i))
+                transformed = transforml(tags[i])
+                for j in range(len(transformed)):
+                    torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
             i += 1
