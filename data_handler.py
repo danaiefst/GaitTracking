@@ -161,7 +161,7 @@ class LegDataLoader():
         self.data_paths = data_paths
         self.cnn = cnn
 
-    def make_batches(batch_size, vid_i, video):
+    def make_batches(self, batch_size, vid_i, video):
         vid_batchd = []
         vid_batchl = []
         i = batch_size
@@ -255,11 +255,11 @@ class LegDataLoader():
         train_set_y = []
 
         for vid_i, video in enumerate(self.data[:-1]):
-            vid_batchd, vid_batchl = make_batches(batch_size, vid_i, video)
+            vid_batchd, vid_batchl = self.make_batches(batch_size, vid_i, video)
             train_set_x.extend(vid_batchd)
             train_set_y.extend(vid_batchl)
 
-        vid_batchd, vid_batchl = make_batches(batch_size, vid_i, video)
+        vid_batchd, vid_batchl = self.make_batches(batch_size, vid_i, video)
         val_set_x = vid_batchd[:int(len(vid_batchd) / 2)]
         val_set_y = vid_batchl[:int(len(vid_batchl) / 2)]
         test_set_x = vid_batchd[int(len(vid_batchd) / 2):]
