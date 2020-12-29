@@ -119,6 +119,41 @@ def transforml(label):
     ret.append(mirrorl(label))
     return ret
 
+def make_batches(batch_size, vid_i):
+    vid_batchd = []
+    vid_batchl = []
+    i = batch_size
+    batch_data = []
+    batch_labels = []
+    print("Loading video", vid_i, "...")
+    prev_frame = None
+    for frame in video:
+        frame_i = int(frame.split(".")[0])
+        #print(i, frame_i)
+        if i == 0 or prev_frame and prev_frame + 1 != frame_i:
+            #print(i, prev_frame, frame_i)
+            vid_batchd.append(torch.stack(batch_data, dim = 0))
+            vid_batchl.append(torch.stack(batch_labels, dim = 0))
+            if self.cnn:
+                batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
+                batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
+            else:
+                batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
+                batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
+            i = batch_size - 1
+        else:
+            if self.cnn:
+                batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
+                batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
+            else:
+                batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
+                batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
+            i -= 1
+        prev_frame = frame_i
+    if batch_data != []:
+        vid_batchd.append(torch.stack(batch_data, dim = 0))
+        vid_batchl.append(torch.stack(batch_labels, dim = 0))
+
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
@@ -126,9 +161,37 @@ class LegDataLoader():
         self.data_paths = data_paths
         self.cnn = cnn
 
-    def load(self, batch_size = 64):
+    def make_batches(batch_size, vid_i, video):
+        vid_batchd = []
+        vid_batchl = []
+        i = batch_size
+        batch_data = []
+        batch_labels = []
+        print("Loading video", vid_i, "...")
+        prev_frame = None
+        for frame in video:
+            frame_i = int(frame.split(".")[0])
+            #print(i, frame_i)
+            if i == 0 or prev_frame and prev_frame + 1 != frame_i:
+                #print(i, prev_frame, frame_i)
+                vid_batchd.append(torch.stack(batch_data, dim = 0))
+                vid_batchl.append(torch.stack(batch_labels, dim = 0))
+                batch_data = [torch.load(self.data[vid_i] + "/" + frame)]
+                batch_labels = [torch.load(self.data[vid_i] + "/" + frame)]
+                i = batch_size - 1
+            else:
+                batch_data.append(torch.load(self.data[vid_i] + "/" + frame))
+                batch_labels.append(torch.load(self.data[vid_i] + "/" + frame))
+                i -= 1
+            prev_frame = frame_i
+        if batch_data != []:
+            vid_batchd.append(torch.stack(batch_data, dim = 0))
+            vid_batchl.append(torch.stack(batch_labels, dim = 0))
+        return vid_batchd, vid_batchl
+
+    def load(self, batch_size):
         self.data = []
-        for path in self.data_paths:
+        for path in self.data_paths[:-1]:
             if self.cnn:
                 self.data.append(sorted(os.listdir(path + "/data_cnn"), key = lambda a: int(a.split(".")[0])))
             else:
@@ -139,7 +202,6 @@ class LegDataLoader():
         val_set_y = []
         test_set_x = []
         test_set_y = []
-        batch_size = batch_size
         for vid_i, video in enumerate(self.data):
             vid_batchd = []
             vid_batchl = []
@@ -180,4 +242,26 @@ class LegDataLoader():
             val_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.7) : int(len(vid_batchl) * 0.85)])
             test_set_x.extend(vid_batchd[int(len(vid_batchd) * 0.85):])
             test_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.85):])
+        return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y
+
+    def load1(self, batch_size):
+        self.data = []
+        for path in self.data_paths:
+            if self.cnn:
+                self.data.append(sorted(os.listdir(path + "/data_cnn"), key = lambda a: int(a.split(".")[0])))
+            else:
+                self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
+        train_set_x = []
+        train_set_y = []
+
+        for vid_i, video in enumerate(self.data[:-1]):
+            vid_batchd, vid_batchl = make_batches(batch_size, vid_i, video)
+            train_set_x.extend(vid_batchd)
+            train_set_y.extend(vid_batchl)
+
+        vid_batchd, vid_batchl = make_batches(batch_size, vid_i, video)
+        val_set_x = vid_batchd[:int(len(vid_batchd) / 2)]
+        val_set_y = vid_batchl[:int(len(vid_batchl) / 2)]
+        test_set_x = vid_batchd[int(len(vid_batchd) / 2):]
+        test_set_y = vid_batchl[int(len(vid_batchl) / 2):]
         return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y

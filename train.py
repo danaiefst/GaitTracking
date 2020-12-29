@@ -11,7 +11,7 @@ print("Working on", device)
 model = tracking_nn.CNN(device).to(device)
 data = data_handler.LegDataLoader()
 print("Loading dataset...")
-train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load1(32)
 
 
 # Train the nn
