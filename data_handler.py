@@ -268,7 +268,7 @@ class LegDataLoader():
             train_set_x.extend(vid_batchd)
             train_set_y.extend(vid_batchl)
 
-        vid_batchd, vid_batchl = self.make_batches(batch_size, vid_i, video)
+        vid_batchd, vid_batchl = self.make_batches(batch_size, len(self.data) - 1, self.data[-1])
         val_set_x = vid_batchd[:int(len(vid_batchd) / 2)]
         val_set_y = vid_batchl[:int(len(vid_batchl) / 2)]
         test_set_x = vid_batchd[int(len(vid_batchd) / 2):]
