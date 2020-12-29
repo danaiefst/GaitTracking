@@ -157,7 +157,7 @@ class Net(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return prob_loss + detect_loss
+        return 10 * prob_loss + detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
