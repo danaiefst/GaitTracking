@@ -113,16 +113,6 @@ class Net(Module):
             Conv2d(1, 16, kernel_size=7, stride=2),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3, padding = 2),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 16, kernel_size=3, padding = 1),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
@@ -133,6 +123,13 @@ class Net(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
