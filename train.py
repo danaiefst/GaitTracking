@@ -9,13 +9,12 @@ data_paths = ["/gpu-data/athdom/p1/2.a"]
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 model = tracking_nn.CNN(device).to(device)
-data = data_handler.LegDataLoader()
+data = data_handler.LegDataLoader(cnn=1)
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load1(32)
 
 
 # Train the nn
-
 grid = 7
 epochs = 100
 patience = 1
@@ -37,12 +36,14 @@ def eucl_dist(out, labels):
         ret += torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
     return ret / out.shape[0] / 2
 
+flag = 1
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 15 == 0:
+    if flag and epoch >= 15:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
+        flag = 0
     for i in range(len(train_set_x)):
         #model.init_hidden(1)
         #print("Training batch", i, "/", len(train_set_x))
