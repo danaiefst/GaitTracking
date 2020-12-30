@@ -2,9 +2,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 
-os.chdir("/home/danai/Desktop/mobot/p1/2.a")
-centers = np.genfromtxt("valid_centers.csv", delimiter = ",")
-laser = np.genfromtxt("valid_laserpoints.csv", delimiter = ",")
+os.chdir("/home/danai/Desktop/GaitTracking/p18/2.a")
+centers = np.genfromtxt("centers.csv", delimiter = ",")
+laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
 box = [(-0.25, 0.2), (0.22, 1)]
 
 plt.ion()
