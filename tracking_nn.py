@@ -31,7 +31,7 @@ class CNN(Module):
             ReLU(inplace=True),
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
-            ReLU(inplace=True),
+            ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
@@ -56,7 +56,7 @@ class CNN(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return 7 * prob_loss + detect_loss
+        return 5 * prob_loss + 5 * detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
@@ -92,7 +92,7 @@ class RNN(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return prob_loss + detect_loss
+        return prob_loss + 5 * detect_loss
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
@@ -113,6 +113,16 @@ class Net(Module):
             Conv2d(1, 16, kernel_size=7, stride=2),
             BatchNorm2d(16),
             ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3, padding = 2),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            MaxPool2d(kernel_size=2, stride=2),
+            Conv2d(16, 16, kernel_size=3, padding = 1),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
@@ -120,13 +130,6 @@ class Net(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            MaxPool2d(kernel_size=2, stride=2),
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True)
