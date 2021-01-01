@@ -60,7 +60,7 @@ class CNN(Module):
 
     def forward(self, x):
         x = x.to(torch.double)
-        x = x.reshape(x.size(0), 1, self.grid, self.grid)
+        x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
