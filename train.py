@@ -3,7 +3,7 @@ import torch
 from torch.optim import Adam
 import sys
 
-check = sys.argv[1] #CNN: 0, RNN: 1, both: 2
+check = int(sys.argv[1]) #CNN: 0, RNN: 1, both: 2
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data_paths = ["/gpu-data/athdom/p1/2.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
