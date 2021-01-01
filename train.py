@@ -81,7 +81,7 @@ for epoch in range(epochs):
                 input = i.to(device)
                 label = j.to(device)
                 if check == 1:
-                    inputs = model1.forward(inputs)
+                    input = model1.forward(input)
                 if check:
                     model.init_hidden(1)
                 output = model.forward(input)
