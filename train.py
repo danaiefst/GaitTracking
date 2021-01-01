@@ -1,14 +1,26 @@
 import data_handler, tracking_nn
 import torch
 from torch.optim import Adam
+import sys
 
+check = sys.argv[1] #CNN: 0, RNN: 1, both: 2
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data_paths = ["/gpu-data/athdom/p1/2.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-model = tracking_nn.Net(device).to(device)
+if check == 0:
+    model = tracking_nn.CNN(device).to(device)
+elif check == 1:
+    model1 = tracking_nn.CNN(device)
+    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_model.pt"))
+    for param in model1.parameters():
+        param.requires_grad = False
+    model1.to(device)
+    model = tracking_nn.RNN(device).to(device)
+else:
+    model = tracking_nn.Net(device).to(device)
 data = data_handler.LegDataLoader()
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load1(32)
@@ -21,7 +33,10 @@ patience = 1
 learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
-save_path = "/home/athdom/GaitTracking/model.pt"
+if check == 0:
+    save_path = "/home/athdom/GaitTracking/cnn_model.pt"
+else:
+    save_path = "/home/athdom/GaitTracking/model.pt"
 
 def eucl_dist(out, labels):
     ret = 0
@@ -45,10 +60,12 @@ for epoch in range(epochs):
         optimizer = Adam(model.parameters(), lr = learning_rate)
         flag = 0
     for i in range(len(train_set_x)):
-        model.init_hidden(1)
-        #print("Training batch", i, "/", len(train_set_x))
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
+        if check == 1:
+            inputs = model1.forward(inputs)
+        if check:
+            model.init_hidden(1)
         outputs = model.forward(inputs)
         loss = model.loss(outputs, labels)
         loss.backward()
@@ -61,9 +78,12 @@ for epoch in range(epochs):
             acc = 0
             dist = 0
             for i, j in zip(val_set_x, val_set_y):
-                model.init_hidden(1)
                 input = i.to(device)
                 label = j.to(device)
+                if check == 1:
+                    inputs = model1.forward(inputs)
+                if check:
+                    model.init_hidden(1)
                 output = model.forward(input)
                 acc += model.loss(output, label) / i.shape[0]
                 dist += eucl_dist(output, label)
