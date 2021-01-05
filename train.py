@@ -3,18 +3,22 @@ import torch
 from torch.optim import Adam
 import sys
 
+torch.cuda.manual_seed(1)
+torch.manual_seed(1)
 check = int(sys.argv[1]) #CNN: 0, RNN: 1, both: 2
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data_paths = ["/gpu-data/athdom/p1/2.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 if check == 0:
     model = tracking_nn.CNN(device).to(device)
 elif check == 1:
     model1 = tracking_nn.CNN(device)
-    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_model.pt"))
+    print("edo1")
+    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/best_cnn_model.pt"))
+    print("edo2")
     for param in model1.parameters():
         param.requires_grad = False
     model1.to(device)
@@ -30,7 +34,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 grid = 7
 epochs = 100
 patience = 1
-learning_rate = 0.0001
+learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 if check == 0:
@@ -51,14 +55,12 @@ def eucl_dist(out, labels):
         ret += torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
     return ret / out.shape[0] / 2
 
-flag = 1
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if flag and epoch >= 20:
+    if epoch % 20 == 0:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
-        flag = 0
     for i in range(len(train_set_x)):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
