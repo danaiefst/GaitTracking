@@ -2,6 +2,7 @@ import torch
 import os
 from matplotlib import pyplot as plt
 from math import pi, sin, cos
+import numpy as np
 
 max_height = 1.2
 min_height = 0.1
@@ -9,6 +10,7 @@ max_width = 0.5
 min_width = -0.5
 img_side = 112
 grid = 7
+box = [(-0.25, 0.2), (0.22, 1)]
 shifts = [(-15, 10), (-10, -10), (-10, 10), (-5, 10), (-7, 5), (2, 10)]
 torch.set_default_dtype(torch.double)
 
@@ -121,47 +123,30 @@ def transforml(label):
     ret.append(mirrorl(label))
     return ret
 
-def make_batches(batch_size, vid_i):
-    vid_batchd = []
-    vid_batchl = []
-    i = batch_size
-    batch_data = []
-    batch_labels = []
-    print("Loading video", vid_i, "...")
-    prev_frame = None
-    for frame in video:
-        frame_i = int(frame.split(".")[0])
-        #print(i, frame_i)
-        if i == 0 or prev_frame and prev_frame + 1 != frame_i:
-            #print(i, prev_frame, frame_i)
-            vid_batchd.append(torch.stack(batch_data, dim = 0))
-            vid_batchl.append(torch.stack(batch_labels, dim = 0))
-            if self.cnn:
-                batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
-                batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
-            else:
-                batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
-                batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
-            i = batch_size - 1
-        else:
-            if self.cnn:
-                batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
-                batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
-            else:
-                batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
-                batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
-            i -= 1
-        prev_frame = frame_i
-    if batch_data != []:
-        vid_batchd.append(torch.stack(batch_data, dim = 0))
-        vid_batchl.append(torch.stack(batch_labels, dim = 0))
-
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, cnn = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]):
+    def __init__(self, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]):
         self.data_paths = data_paths
         self.cnn = cnn
+        if online:
+            os.chdir(data_paths[0])
+            valid = open("valid.txt", "r")
+            laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
+            centers = np.genfromtxt("centers.csv", delimiter = ",")
+            self.online_data = []
+            for line in valid:
+                start, end = line.strip().split(" ")
+                i = int(start)
+                end = int(end)
+                subvideo = []
+                while i <= end:
+                    subvideo.append((laser[i], centers[i]))
+                    i += 1
+                self.online_data.append(subvideo)
+            self.online_i = 0
+            self.online_j = 0
+
 
     def make_batches(self, batch_size, vid_i, video):
         vid_batchd = []
@@ -201,61 +186,6 @@ class LegDataLoader():
 
     def load(self, batch_size):
         self.data = []
-        for path in self.data_paths[:-1]:
-            if self.cnn:
-                self.data.append(sorted(os.listdir(path + "/data_cnn"), key = lambda a: int(a.split(".")[0])))
-            else:
-                self.data.append(sorted(os.listdir(path + "/data"), key = lambda a: int(a.split(".")[0])))
-        train_set_x = []
-        train_set_y = []
-        val_set_x = []
-        val_set_y = []
-        test_set_x = []
-        test_set_y = []
-        for vid_i, video in enumerate(self.data):
-            vid_batchd = []
-            vid_batchl = []
-            i = batch_size
-            batch_data = []
-            batch_labels = []
-            print("Loading video", vid_i, "...")
-            prev_frame = None
-            for frame in video:
-                frame_i = int(frame.split(".")[0])
-                #print(i, frame_i)
-                if i == 0 or prev_frame and prev_frame + 1 != frame_i:
-                    #print(i, prev_frame, frame_i)
-                    vid_batchd.append(torch.stack(batch_data, dim = 0))
-                    vid_batchl.append(torch.stack(batch_labels, dim = 0))
-                    if self.cnn:
-                        batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
-                        batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
-                    else:
-                        batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
-                        batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
-                    i = batch_size - 1
-                else:
-                    if self.cnn:
-                        batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
-                        batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
-                    else:
-                        batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
-                        batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
-                    i -= 1
-                prev_frame = frame_i
-            if batch_data != []:
-                vid_batchd.append(torch.stack(batch_data, dim = 0))
-                vid_batchl.append(torch.stack(batch_labels, dim = 0))
-            train_set_x.extend(vid_batchd[:int(len(vid_batchd) * 0.7)])
-            train_set_y.extend(vid_batchl[:int(len(vid_batchl) * 0.7)])
-            val_set_x.extend(vid_batchd[int(len(vid_batchd) * 0.7) : int(len(vid_batchd) * 0.85)])
-            val_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.7) : int(len(vid_batchl) * 0.85)])
-            test_set_x.extend(vid_batchd[int(len(vid_batchd) * 0.85):])
-            test_set_y.extend(vid_batchl[int(len(vid_batchl) * 0.85):])
-        return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y
-
-    def load1(self, batch_size):
-        self.data = []
 
         for path in self.data_paths:
             if self.cnn:
@@ -276,3 +206,32 @@ class LegDataLoader():
         test_set_x = vid_batchd[int(len(vid_batchd) / 2):]
         test_set_y = vid_batchl[int(len(vid_batchl) / 2):]
         return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y
+
+    def load_online(self):
+        img = torch.zeros((img_side, img_side), dtype=torch.double)
+        laser = self.data[self.online_i][self.online_j][0]
+        laser_spots = laser.reshape((int(laser.shape[0] / 2), 2))
+        in_box1 = np.logical_and(box[0][0] < laser_spots[:, 0], laser_spots[:, 0] < box[1][0])
+        in_box2 = np.logical_and(box[0][1] < laser_spots[:, 1], laser_spots[:, 1] < box[1][1])
+        in_box = np.logical_and(in_box1, in_box2)
+        y = np.round((laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side)
+        x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
+        img[x.astype(int), y.astype(int)] = 1
+        img = img.view(1, img.shape)
+
+        center = self.data[self.online_i][self.online_j][1]
+        y1 = (center[0] - min_width) / (max_width - min_width) * grid
+        x1 = grid - (center[1] - min_height) / (max_height - min_height) * grid
+        y2 = (center[2] - min_width) / (max_width - min_width) * grid
+        x2 = grid - (center[3] - min_height) / (max_height - min_height) * grid
+        tag = torch.tensor([[int(x1), int(y1), x1 % 1, y1 % 1], [int(x2), int(y2), x2 % 1, y2 % 1]], dtype=torch.double())
+        tag = tag.view(1, tag.shape)
+
+        #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
+        if self.online_i == len(self.data) - 1:
+            return -1, img, tag
+        if self.online_j == len(self.data[self.online_i]) - 1:
+            self.online_j = 0
+            self.online_i += 1
+            return 1, img, tag
+        return 0, img, tag
