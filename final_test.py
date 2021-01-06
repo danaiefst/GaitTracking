@@ -29,10 +29,10 @@ def print_data(img, found, real):
     plt.scatter(x2, y2, c = 'y', marker = 'v')
     plt.scatter(x1h, y1h, c = 'r', marker = 'o')
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
-    plt.show()
-    #plt.show(block=False)
-    #plt.pause(0.1)
-    #plt.clf()
+    #plt.show()
+    plt.show(block=False)
+    plt.pause(0.05)
+    plt.clf()
 
 def check_out(batch, out, label):
     for i in range(out.shape[0]):
@@ -77,21 +77,26 @@ data = data_handler.LegDataLoader(online = 1, data_paths = data_paths)
 print("Loading dataset...")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
-net = tracking_nn.Net(device)
-#net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
-#net.to(device)
-net.rnn_layers.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/rnn_model.pt", map_location=device))
-net.cnn_layers.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/cnn_model.pt", map_location=device))
-net.linear_layers.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/cnn_model.pt", map_location=device))
+net1 = tracking_nn.CNN(device)
+net2 = tracking_nn.RNN(device)
+net = tracking_nn.Net(device, net1, net2)
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location = device))
+net.to(device)
 all_dists = []
 flag = 1
+i = 0
 while(flag >= 0):
+    #print(i)
+    #i += 1
+    #t = time.time()
     if flag:
         net.init_hidden(1)
     flag, img, label = data.load_online()
+    #data_handler.print_data(img[0], label[0])
     with torch.no_grad():
         output = net(img.to(device))
+        #print("time:", time.time() - t)
         all_dists.extend(eucl_dist(output, label))
-
+        check_out(img, output, label)
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / 7, "Max dist:", max(all_dists) / 7, "Median dist:", median(all_dists) / 7)

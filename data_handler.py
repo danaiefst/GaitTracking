@@ -209,7 +209,7 @@ class LegDataLoader():
 
     def load_online(self):
         img = torch.zeros((img_side, img_side), dtype=torch.double)
-        laser = self.data[self.online_i][self.online_j][0]
+        laser = self.online_data[self.online_i][self.online_j][0]
         laser_spots = laser.reshape((int(laser.shape[0] / 2), 2))
         in_box1 = np.logical_and(box[0][0] < laser_spots[:, 0], laser_spots[:, 0] < box[1][0])
         in_box2 = np.logical_and(box[0][1] < laser_spots[:, 1], laser_spots[:, 1] < box[1][1])
@@ -217,21 +217,22 @@ class LegDataLoader():
         y = np.round((laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side)
         x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
         img[x.astype(int), y.astype(int)] = 1
-        img = img.view(1, img.shape)
+        img = img.view(1, *img.shape)
 
-        center = self.data[self.online_i][self.online_j][1]
+        center = self.online_data[self.online_i][self.online_j][1]
         y1 = (center[0] - min_width) / (max_width - min_width) * grid
         x1 = grid - (center[1] - min_height) / (max_height - min_height) * grid
         y2 = (center[2] - min_width) / (max_width - min_width) * grid
         x2 = grid - (center[3] - min_height) / (max_height - min_height) * grid
-        tag = torch.tensor([[int(x1), int(y1), x1 % 1, y1 % 1], [int(x2), int(y2), x2 % 1, y2 % 1]], dtype=torch.double())
-        tag = tag.view(1, tag.shape)
+        tag = torch.tensor([[int(x1), int(y1), x1 % 1, y1 % 1], [int(x2), int(y2), x2 % 1, y2 % 1]], dtype=torch.double)
+        tag = tag.view(1, *tag.shape)
 
         #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
-        if self.online_i == len(self.data) - 1:
+        if self.online_i == len(self.online_data) - 1:
             return -1, img, tag
-        if self.online_j == len(self.data[self.online_i]) - 1:
+        if self.online_j == len(self.online_data[self.online_i]) - 1:
             self.online_j = 0
             self.online_i += 1
             return 1, img, tag
+        self.online_j += 1
         return 0, img, tag
