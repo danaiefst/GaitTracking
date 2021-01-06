@@ -7,17 +7,17 @@ torch.cuda.manual_seed(1)
 torch.manual_seed(1)
 check = int(sys.argv[1]) #CNN: 0, RNN: 1, both: 2
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-data_paths = ["/gpu-data/athdom/p1/2.a"]
+data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p5/2.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 if check == 0:
     model = tracking_nn.CNN(device).to(device)
 elif check == 1:
     model1 = tracking_nn.CNN(device)
     print("edo1")
-    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/best_cnn_model.pt"))
+    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/best_cnn_model.pt", map_location = device))
     print("edo2")
     for param in model1.parameters():
         param.requires_grad = False
@@ -37,7 +37,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 grid = 7
 epochs = 100
 patience = 1
-learning_rate = 0.0001
+learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 if check == 0:
@@ -67,8 +67,6 @@ for epoch in range(epochs):
     for i in range(len(train_set_x)):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
-        if check == 1:
-            inputs = model1.forward(inputs)
         if check:
             model.init_hidden(1)
         outputs = model.forward(inputs)
@@ -85,8 +83,6 @@ for epoch in range(epochs):
             for i, j in zip(val_set_x, val_set_y):
                 input = i.to(device)
                 label = j.to(device)
-                if check == 1:
-                    input = model1.forward(input)
                 if check:
                     model.init_hidden(1)
                 output = model.forward(input)

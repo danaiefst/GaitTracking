@@ -102,7 +102,7 @@ class RNN(Module):
 
 class Net(Module):
     def init_hidden(self, batch_size):
-        self.rnn_model.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
+        self.rnn_model.init_hidden(batch_size)
 
     def __init__(self, device, cnn_model, rnn_model):
         super(Net, self).__init__()
@@ -128,10 +128,6 @@ class Net(Module):
         return prob_loss + 5 * detect_loss
 
     def forward(self, x):
-        x = x.to(torch.double)
-        x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
-        x = self.cnn_model.cnn_layers(x)
-        x = x.view(x.size(0), -1)
-        x = self.cnn_model.linear_layers(x)
+        x = self.cnn_model(x)
         x = self.rnn_model(x)
         return x
