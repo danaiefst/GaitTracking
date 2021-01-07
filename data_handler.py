@@ -126,7 +126,7 @@ def transforml(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a"]):
+    def __init__(self, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p17/3.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a"]):
         self.data_paths = data_paths
         self.cnn = cnn
         if online:

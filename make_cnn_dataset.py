@@ -16,6 +16,7 @@ data_paths1=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.
 
 
 for data_path in range(len(data_paths)):
+    print(data_paths[data_path])
     os.chdir(data_paths1[data_path])
     os.system("rm " + data_paths[data_path] + "/data_cnn/*")
     os.system("rm " + data_paths[data_path] + "/labels_cnn/*")
