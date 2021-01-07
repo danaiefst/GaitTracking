@@ -17,7 +17,7 @@ if check == 0:
 elif check == 1:
     model1 = tracking_nn.CNN(device)
     print("edo1")
-    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/best_cnn_model.pt", map_location = device))
+    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_cnn_model.pt", map_location = device))
     print("edo2")
     for param in model1.parameters():
         param.requires_grad = False
@@ -61,7 +61,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 20 == 0:
+    if epoch % 30 == 0:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
