@@ -28,7 +28,7 @@ else:
     model1 = tracking_nn.CNN(device).to(device)
     model2 = tracking_nn.RNN(device).to(device)
     model = tracking_nn.Net(device, model1, model2).to(device)
-data = data_handler.LegDataLoader()
+data = data_handler.LegDataLoader(cnn=1)
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
@@ -37,7 +37,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 grid = 7
 epochs = 100
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.0001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 if check == 0:
@@ -61,9 +61,9 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 30 == 0:
-        learning_rate *= 0.1
-        optimizer = Adam(model.parameters(), lr = learning_rate)
+    #if epoch % 30 == 0:
+    #    learning_rate *= 0.1
+    #    optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
