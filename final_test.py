@@ -7,7 +7,8 @@ import tracking_nn
 import time
 
 grid = 7
-
+torch.cuda.manual_seed(1)
+torch.manual_seed(1)
 def print_data(img, found, real):
     y,x = torch.where(img)
     y = (112 - y) / 112.0 * 1.1 + 0.1
@@ -97,6 +98,6 @@ while(flag >= 0):
         output = net(img.to(device))
         #print("time:", time.time() - t)
         all_dists.extend(eucl_dist(output, label))
-        check_out(img, output, label)
+        #check_out(img, output, label)
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / 7, "Max dist:", max(all_dists) / 7, "Median dist:", median(all_dists) / 7)
