@@ -195,16 +195,17 @@ class LegDataLoader():
         train_set_x = []
         train_set_y = []
 
-        for vid_i, video in enumerate(self.data[:-1]):
+        for vid_i, video in enumerate(self.data[:-2]):
             vid_batchd, vid_batchl = self.make_batches(batch_size, vid_i, video)
             train_set_x.extend(vid_batchd)
             train_set_y.extend(vid_batchl)
 
+        vid_batchd, vid_batchl = self.make_batches(batch_size, len(self.data) - 2, self.data[-2])
+        val_set_x = vid_batchd
+        val_set_y = vid_batchl
         vid_batchd, vid_batchl = self.make_batches(batch_size, len(self.data) - 1, self.data[-1])
-        val_set_x = vid_batchd[:int(len(vid_batchd) / 2)]
-        val_set_y = vid_batchl[:int(len(vid_batchl) / 2)]
-        test_set_x = vid_batchd[int(len(vid_batchd) / 2):]
-        test_set_y = vid_batchl[int(len(vid_batchl) / 2):]
+        test_set_x = vid_batchd
+        test_set_y = vid_batchl
         return train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y
 
     def load_online(self):
