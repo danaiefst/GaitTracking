@@ -33,7 +33,6 @@ for data_path in range(len(data_paths)):
     max_width = 0.5
     min_width = -0.5
     img_side = 112
-    grid = 7
     points_r = []
     points_l = []
     images = []
@@ -49,10 +48,10 @@ for data_path in range(len(data_paths)):
         x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
 
         center = centers[i]
-        y1 = int((center[0] - min_width) / (max_width - min_width) * img_side)
-        x1 = int(img_side - (center[1] - min_height) / (max_height - min_height) * img_side)
-        y2 = int((center[2] - min_width) / (max_width - min_width) * img_side)
-        x2 = int(img_side - (center[3] - min_height) / (max_height - min_height) * img_side)
+        y1 = (center[0] - min_width) / (max_width - min_width) * img_side
+        x1 = img_side - (center[1] - min_height) / (max_height - min_height) * img_side
+        y2 = (center[2] - min_width) / (max_width - min_width) * img_side
+        x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
 
         if 0 <= x1 < img_side and 0 <= y1 < img_side and 0 <= x2 < img_side and 0 <= y2 < img_side:
             dists1 = (x - x1) ** 2 + (y - y1) ** 2
