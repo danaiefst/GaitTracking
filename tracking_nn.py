@@ -99,14 +99,11 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Dropout(0.5)
+            Dropout(0.5)
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 512),
-            Dropout(0.5),
-            ReLU(inplace=True),
-            Linear(512, 8),    #294 = 6*7*7
+            Linear(784, 8),    #294 = 6*7*7
             ReLU(inplace=True)
         )
 
