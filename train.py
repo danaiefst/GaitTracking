@@ -79,7 +79,7 @@ for epoch in range(epochs):
     if epoch >= patience:
         with torch.no_grad():
             acc = 0
-            dist = 0
+            #dist = 0
             for i, j in zip(val_set_x, val_set_y):
                 input = i.to(device)
                 label = j.to(device)
@@ -87,8 +87,8 @@ for epoch in range(epochs):
                     model.init_hidden(1)
                 output = model.forward(input)
                 acc += model.loss(output, label) / i.shape[0]
-                dist += eucl_dist(output, label)
+                #dist += eucl_dist(output, label)
             if acc < best_acc:
                 best_acc = acc
-                print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x))
+                print("Saving model with acc:", acc / len(val_set_x))
                 torch.save(model.state_dict(), save_path)

@@ -106,14 +106,14 @@ class CNN(Module):
             Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
-            Linear(512, 6 * self.grid * self.grid),    #294 = 6*7*7
+            Linear(512, 8),    #294 = 6*7*7
             ReLU(inplace=True)
         )
 
         self.TCN = TemporalConvNet(6 * self.grid * self.grid, [6 * self.grid * self.grid])
 
     def loss(self, yh, y):
-        #Probability loss
+        """#Probability loss
         probh = yh[:, [0, 3], :, :]
         prob = torch.zeros(y.shape[0], 2, self.grid, self.grid).to(self.device)
         prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
@@ -126,7 +126,12 @@ class CNN(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return 5 * prob_loss + 5 * detect_loss
+        return 5 * prob_loss + 5 * detect_loss"""
+        rlegh = yh[:, :2] + yh[:, 2:4]
+        rleg = y[:, 0, :2] + y[:, 0, 2:]
+        llegh = yh[:, 4:6] + yh[:, 6:]
+        lleg = y[:, 1, :2] + y[:, 1, 2:]
+        return ((rlegh - rleg) ** 2).sum() + ((llegh - lleg) ** 2).sum()
 
     def forward(self, x):
         x = x.to(torch.double)
@@ -134,9 +139,6 @@ class CNN(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(x.size(0), -1, 1)
-        x = self.TCN(x)
-        x = x.view(x.size(0), 6, self.grid, self.grid)
         return x
 
 class RNN(Module):
