@@ -59,7 +59,7 @@ else:
     return ret / out.shape[0] / 2"""
 
 def eucl_dist(out, labels):
-    return torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum() / out.shape[0] / 2
+    return (torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum()) / out.shape[0] / 2
 
 print("Started training...")
 for epoch in range(epochs):
