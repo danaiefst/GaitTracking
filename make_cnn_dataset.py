@@ -79,10 +79,8 @@ for data_path in range(len(data_paths)):
                new_points_r.append(points_r[i])
                new_points_l.append(points_l[i])
                img = torch.zeros((img_side, img_side), dtype=torch.double)
-               for j in range(len(points_r[i][0])):
-                   img[points_r[i][0][j], points_r[i][1][j]] += 1
-               for j in range(len(points_l[i][0])):
-                   img[points_l[i][0][j], points_l[i][1][j]] += 1
+               img[points_r[i][0], points_r[i][1]] = 1
+               img[points_l[i][0], points_l[i][1]] = 1
                tag = torch.tensor([[int(points_r[i][2] / img_side * grid), int(points_r[i][3] / img_side * grid), (points_r[i][2] / img_side * grid) % 1, (points_r[i][3] / img_side * grid) % 1], [int(points_l[i][2] / img_side * grid), int(points_l[i][3] / img_side * grid), (points_l[i][2] / img_side * grid) % 1, (points_l[i][3] / img_side * grid) % 1]], dtype=torch.double)
                torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
                torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
@@ -105,10 +103,8 @@ for data_path in range(len(data_paths)):
                 leg2_y = (new_points_l[l[i]][1] + y_l[j] * img_side - new_points_l[l[i]][3]).astype(int)
                 valid_leg1 = (leg1_x >= 0) * (leg1_x < img_side) * (leg1_y >= 0) * (leg1_y < img_side)
                 valid_leg2 = (leg2_x >= 0) * (leg2_x < img_side) * (leg2_y >= 0) * (leg2_y < img_side)
-                for k in range(len(leg1_x[valid_leg1])):
-                    img[leg1_x[valid_leg1][k], leg1_y[valid_leg1][k]] += 1
-                for k in range(len(leg2_x[valid_leg2])):
-                    img[leg2_x[valid_leg2][k], leg2_y[valid_leg2][k]] += 1
+                img[leg1_x[valid_leg1], leg1_y[valid_leg1]] = 1
+                img[leg2_x[valid_leg2], leg2_y[valid_leg2]] = 1
                 label1 = [int(x_r[j] * grid), int(y_r[j] * grid), (x_r[j] * grid) % 1, (y_r[j] * grid) % 1]
                 label2 = [int(x_l[j] * grid), int(y_l[j] * grid), (x_l[j] * grid) % 1, (y_l[j] * grid) % 1]
                 if y_r[j] > y_l[j]:
