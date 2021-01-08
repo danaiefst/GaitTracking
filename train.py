@@ -28,7 +28,7 @@ else:
     model1 = tracking_nn.CNN(device).to(device)
     model2 = tracking_nn.RNN(device).to(device)
     model = tracking_nn.Net(device, model1, model2).to(device)
-data = data_handler.LegDataLoader()
+data = data_handler.LegDataLoader(cnn=1)
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
