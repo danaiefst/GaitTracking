@@ -81,7 +81,7 @@ for data_path in range(len(data_paths)):
                img = torch.zeros((img_side, img_side), dtype=torch.double)
                img[points_r[i][0], points_r[i][1]] = 1
                img[points_l[i][0], points_l[i][1]] = 1
-               tag = torch.tensor([[int(points_r[i][2] / img_side * grid), int(points_r[i][3] / img_side * grid), (points_r[i][2] / img_side * grid) % 1, (points_r[i][3] / img_side * grid) % 1], [int(points_l[i][2] / img_side * grid), int(points_l[i][3] / img_side * grid), (points_l[i][2] / img_side * grid) % 1, (points_l[i][3] / img_side * grid) % 1]], dtype=torch.double)
+               tag = torch.tensor([[points_r[i][2], points_r[i][3]], [points_l[i][2], points_l[i][3]]], dtype=torch.double)
                torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
                torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
                file += 1
@@ -105,8 +105,8 @@ for data_path in range(len(data_paths)):
                 valid_leg2 = (leg2_x >= 0) * (leg2_x < img_side) * (leg2_y >= 0) * (leg2_y < img_side)
                 img[leg1_x[valid_leg1], leg1_y[valid_leg1]] = 1
                 img[leg2_x[valid_leg2], leg2_y[valid_leg2]] = 1
-                label1 = [int(x_r[j] * grid), int(y_r[j] * grid), (x_r[j] * grid) % 1, (y_r[j] * grid) % 1]
-                label2 = [int(x_l[j] * grid), int(y_l[j] * grid), (x_l[j] * grid) % 1, (y_l[j] * grid) % 1]
+                label1 = [x_r[j] * img_side, y_r[j] * img_side]
+                label2 = [x_l[j] * img_side, y_l[j] * img_side]
                 if y_r[j] > y_l[j]:
                     tag = torch.tensor([label2, label1], dtype=torch.double)
                 else:
