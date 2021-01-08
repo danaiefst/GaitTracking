@@ -63,7 +63,7 @@ for data_path in range(len(data_paths)):
         while i <= end:
             torch.save(images[i], "{}/data/{}.pt".format(data_paths[data_path], i))
             torch.save(tags[i], "{}/labels/{}.pt".format(data_paths[data_path], i))
-            if data_path < len(data_paths) - 1:
+            if data_path < len(data_paths) - 2:
                 transformed = transformi(images[i])
                 for j in range(len(transformed)):
                     torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
