@@ -19,7 +19,7 @@ def mirrori(img):
     return new_img
 
 def mirrorl(labels):
-    new_labels = torch.tensor([[labels[1, 0], img_side - 1 - labels[1, 1]], [labels[0, 0], img_side - 1 - labels[0, 1]])
+    new_labels = torch.tensor([[labels[1, 0], img_side - 1 - labels[1, 1]], [labels[0, 0], img_side - 1 - labels[0, 1]]])
     return new_labels
 
 def shifti(img, x, y):
@@ -168,7 +168,7 @@ class LegDataLoader():
         x1 = img_side - (center[1] - min_height) / (max_height - min_height) * img_side
         y2 = (center[2] - min_width) / (max_width - min_width) * img_side
         x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
-        tag = torch.tensor([x1, y1], [x2, y2]], dtype=torch.double)
+        tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
         tag = tag.view(1, *tag.shape)
 
         #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
