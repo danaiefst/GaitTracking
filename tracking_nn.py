@@ -103,7 +103,7 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 8),    #294 = 6*7*7
+            Linear(784, 4),    #294 = 6*7*7
             ReLU(inplace=True)
         )
 
@@ -124,9 +124,9 @@ class CNN(Module):
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
         return 5 * prob_loss + 5 * detect_loss"""
-        rlegh = yh[:, :2] + yh[:, 2:4]
+        rlegh = yh[:, :2]
         rleg = y[:, 0, :2] + y[:, 0, 2:]
-        llegh = yh[:, 4:6] + yh[:, 6:]
+        llegh = yh[:, 2:]
         lleg = y[:, 1, :2] + y[:, 1, 2:]
         return ((rlegh - rleg) ** 2).sum() + ((llegh - lleg) ** 2).sum()
 

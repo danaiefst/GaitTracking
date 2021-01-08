@@ -59,9 +59,9 @@ else:
     return ret / out.shape[0] / 2"""
 
 def eucl_dist(out, labels):
-    rlegh = out[:, :2] + out[:, 2:4]
+    rlegh = out[:, :2]
     rleg = labels[:, 0, :2] + labels[:, 0, 2:]
-    llegh = out[:, 4:6] + out[:, 6:]
+    llegh = out[:, 2:]
     lleg = labels[:, 1, :2] + labels[:, 1, 2:]
     ret = torch.sqrt(((rlegh - rleg) ** 2).sum(axis = 1)).sum() + torch.sqrt(((llegh - lleg) ** 2).sum(axis = 1)).sum()
     return ret / out.shape[0] / 2
