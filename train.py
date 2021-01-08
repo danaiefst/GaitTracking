@@ -59,7 +59,7 @@ else:
     return ret / out.shape[0] / 2"""
 
 def eucl_dist(out, labels):
-    rh = out[:, :2] + out[:, 2:4]
+    rlegh = out[:, :2] + out[:, 2:4]
     rleg = labels[:, 0, :2] + labels[:, 0, 2:]
     llegh = out[:, 4:6] + out[:, 6:]
     lleg = labels[:, 1, :2] + labels[:, 1, 2:]
