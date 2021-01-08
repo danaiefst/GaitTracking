@@ -63,7 +63,7 @@ class CNN(Module):
 
         detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
 
-        return 10 * prob_loss + 5 * detect_loss
+        return 5 * prob_loss + 5 * detect_loss
 
     def forward(self, x):
         x = x.to(torch.double)
