@@ -10,7 +10,7 @@ max_width = 0.5
 min_width = -0.5
 img_side = 112
 box = [(-0.25, 0.2), (0.22, 1)]
-shifts = np.array([[-15, 10], [-10, -10], [-10, 10], [-5, 10], [-7, 5], [2, 10]])
+shifts = torch.tensor([[-15, 10], [-10, -10], [-10, 10], [-5, 10], [-7, 5], [2, 10]], dtype=torch.double)
 torch.set_default_dtype(torch.double)
 
 
@@ -50,7 +50,8 @@ def print_data(img, labels, fast=0):
 def transformi(img):
     ret = []
     for s in shifts:
-        new_img = shifti(img, *s)
+        #print(int(s[0]), s[1])
+        new_img = shifti(img, int(s[0]), int(s[1]))
         ret.append(new_img)
     ret.append(mirrori(img))
     return ret

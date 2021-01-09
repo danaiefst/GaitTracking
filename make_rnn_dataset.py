@@ -52,7 +52,7 @@ for data_path in range(len(data_paths)):
         x1 = img_side - (center[1] - min_height) / (max_height - min_height) * img_side
         y2 = (center[2] - min_width) / (max_width - min_width) * img_side
         x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
-        tags.append(torch.tensor([[x1, y1], [x2, y2]],cdtype=torch.double))
+        tags.append(torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double))
         #print(time.time() - t)
     i = 0
     last = laser.shape[0]
@@ -61,7 +61,7 @@ for data_path in range(len(data_paths)):
         i = int(start)
         end = int(end)
         while i <= end:
-            print("Saving", i)
+            #print("Saving", i)
             torch.save(images[i], "{}/data/{}.pt".format(data_paths[data_path], i))
             torch.save(tags[i], "{}/labels/{}.pt".format(data_paths[data_path], i))
             if data_path < len(data_paths) - 2:
