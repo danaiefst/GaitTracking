@@ -72,6 +72,7 @@ class Net(Module):
         self.grid = 7
         self.cnn = cnn
         self.rnn = rnn
+        self.device = device
 
     def loss(self, yh, y):
         #Probability loss
