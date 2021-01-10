@@ -2,6 +2,9 @@ import data_handler, tracking_nn
 import torch
 from torch.optim import Adam
 
+torch.cuda.manual_seed(1)
+torch.manual_seed(1)
+
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
@@ -13,12 +16,11 @@ rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(data_paths = data_paths)
 print("Loading dataset...")
-train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(16)
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
 
 # Train the nn
 
-grid = 7
 epochs = 1000
 patience = 1
 learning_rate = 0.001
@@ -27,26 +29,15 @@ best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/model.pt"
 
 def eucl_dist(out, labels):
-    ret = 0
-    for i in range(out.shape[0]):
-        yh = out[i]
-        p1_h = yh[0, :, :]
-        p2_h = yh[3, :, :]
-        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
-        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
-        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
-        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-        ret += ((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
-    return ret / out.shape[0] / 2
+    return (torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum()) / out.shape[0] / 2
 
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 10 == 0:
+    if epoch == 20 or epoch == 50:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
-        #print("Training batch", i, "/", len(train_set_x))
         model.init_hidden(1)
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()

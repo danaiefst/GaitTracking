@@ -34,7 +34,6 @@ for data_path in range(len(data_paths)):
     box = [(-0.25, 0.2), (0.22, 1)]
 
     for i in range(laser.shape[0]):
-        #t = time.time()
         img = torch.zeros((img_side, img_side), dtype=torch.double)
         laser_spots = laser[i].reshape((int(laser[i].shape[0] / 2), 2))
         in_box1 = np.logical_and(box[0][0] < laser_spots[:, 0], laser_spots[:, 0] < box[1][0])
@@ -51,7 +50,6 @@ for data_path in range(len(data_paths)):
         y2 = (center[2] - min_width) / (max_width - min_width) * img_side
         x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
         tags.append(torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double))
-        #print(time.time() - t)
     i = 0
     last = laser.shape[0]
     for line in valid:
