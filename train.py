@@ -12,6 +12,9 @@ data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 cnn = tracking_nn.CNN().to(device)
+#cnn.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_model.pt", map_location = device))
+#for param in cnn.parameters():
+#    param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(data_paths = data_paths)
@@ -42,7 +45,7 @@ for epoch in range(epochs):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
-        #print("labels", labels[0])
+        print("labels", labels[0])
         loss = model.loss(outputs, labels)
         loss.backward()
         optimizer.step()

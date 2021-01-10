@@ -78,7 +78,7 @@ class Net(Module):
     def forward(self, x):
         y = self.cnn(x)
         #print(y[0])
-        y = self.rnn(y)
+        #y = self.rnn(y)
         #print(y[0])
         return y
 
