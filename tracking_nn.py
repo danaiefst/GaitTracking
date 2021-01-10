@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Sigmoid, LSTM, Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, Softmax, BatchNorm2d, Dropout
+from torch.nn import LSTM, Linear, ReLU, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d, Dropout
 
 torch.set_default_dtype(torch.double)
 
@@ -15,22 +15,22 @@ class Net(Module):
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
             BatchNorm2d(16),
-            Dropout(0.5),
+            #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(16, 32, kernel_size=3),
             BatchNorm2d(32),
-            Dropout(0.5),
+            #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
-            Dropout(0.5),
+            #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
-            Dropout(0.5),
+            #Dropout(0.5),
             ReLU(inplace=True),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
@@ -39,12 +39,12 @@ class Net(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(1568, 512),
-            Dropout(0.5),
+            Linear(1568, 294),
+            #Dropout(0.5),
             ReLU(inplace=True),
-            Linear(512, 294),
-            Dropout(0.5),        #384 = 6*7*7
-            Sigmoid(),
+            #Linear(512, 294),
+            #Dropout(0.5),        #384 = 6*7*7
+            #Sigmoid(),
         )
 
 
