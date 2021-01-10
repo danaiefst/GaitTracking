@@ -33,7 +33,7 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 296),
+            Linear(784, 294),
             ReLU(inplace=True)
         )
 
