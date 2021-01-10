@@ -12,28 +12,28 @@ class CNN(Module):
             #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(16, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             #Dropout(0.5),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             Dropout(0.5),
             ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1568, 294),
+            Linear(784, 4),
             ReLU(inplace=True)
         )
 
@@ -43,6 +43,7 @@ class CNN(Module):
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
+        x = x.view(x.size(0), 6, 7, 7)
         return x
 
 class RNN(Module):
