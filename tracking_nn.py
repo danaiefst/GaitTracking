@@ -3,14 +3,9 @@ from torch.nn import LSTM, Linear, ReLU, Sequential, Conv2d, MaxPool2d, Module, 
 
 torch.set_default_dtype(torch.double)
 
-class Net(Module):
-    def init_hidden(self, batch_size):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
-
-    def __init__(self, device):
-        super(Net, self).__init__()
-        self.grid = 7
-        self.num_of_layers = 1
+class CNN(Module):
+    def __init__(self):
+        super(CNN, self).__init__()
         self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
@@ -40,15 +35,43 @@ class Net(Module):
 
         self.linear_layers = Sequential(
             Linear(1568, 294),
-            #Dropout(0.5),
-            ReLU(inplace=True),
-            #Linear(512, 294),
-            #Dropout(0.5),        #384 = 6*7*7
-            #Sigmoid(),
+            ReLU(inplace=True)
         )
 
+    def forward(self, x):
+        x = x.to(torch.double)
+        x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
+        x = self.cnn_layers(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layers(x)
+        return x
 
+class RNN(Module):
+    def init_hidden(self, batch_size):
+        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
+
+    def __init__(self):
+        super(RNN, self).__init__()
+        self.grid = 7
+        self.num_of_layers = 1
         self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
+
+    def forward(self, x):
+        x = x.view(1, x.size(0), -1)
+        x, self.h = self.rnn_layers(x, self.h)
+        x = x.view((x.size(1), 6, self.grid, self.grid))
+        return x
+
+class Net(Module):
+
+    def init_hidden(self, batch_size):
+        self.rnn.init_hidden(batch_size)
+
+    def __init__(self, device, cnn, rnn):
+        super(Net, self).__init__()
+        self.grid = 7
+        self.cnn = cnn
+        self.rnn = rnn
 
     def loss(self, yh, y):
         #Probability loss
@@ -67,13 +90,4 @@ class Net(Module):
         return prob_loss + detect_loss
 
     def forward(self, x):
-        x = x.to(torch.double)
-        x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
-        x = self.cnn_layers(x)
-        x = x.view(x.size(0), -1)
-        x = self.linear_layers(x)
-        x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 6, self.grid, self.grid))
-        #x = x.view(x.size(0), 6, self.grid, self.grid)
-        return x
+        return self.rnn(self.cnn(x))
