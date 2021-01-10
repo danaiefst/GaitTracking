@@ -29,7 +29,7 @@ patience = 1
 learning_rate = 0.001
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
-save_path = "/home/athdom/GaitTracking/model.pt"
+save_path = "/home/athdom/GaitTracking/cnn_model.pt"
 
 def eucl_dist(out, labels):
     return (torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum()) / out.shape[0] / 2
@@ -65,4 +65,4 @@ for epoch in range(epochs):
             if acc < best_acc:
                 best_acc = acc
                 print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x))
-                torch.save(model.state_dict(), save_path)
+                torch.save(cnn.state_dict(), save_path)
