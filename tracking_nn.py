@@ -6,7 +6,6 @@ torch.set_default_dtype(torch.double)
 class CNN(Module):
     def __init__(self):
         super(CNN, self).__init__()
-        self.device = device
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7),
             BatchNorm2d(16),
