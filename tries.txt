@@ -1,7 +1,2 @@
-prev cnn: 1.74 wth lstm
-
-new cnn (added layer): 1.16 with lstm
-+ more features: 3.43
-
-all data: 7 layers cnn: 1.9-2.1
-          no lstm:
+5.8631 / 112 best loss with rnn dataset
+9.1 with cnn dataset

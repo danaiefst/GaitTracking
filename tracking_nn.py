@@ -142,31 +142,14 @@ class RNN(Module):
 
     def __init__(self, device):
         super(RNN, self).__init__()
-        self.grid = 7
         self.num_of_layers = 1
         self.device = device
-        self.rnn_layers = LSTM(input_size = 6 * self.grid * self.grid, hidden_size = 6 * self.grid * self.grid, num_layers = self.num_of_layers, batch_first = True)
-
-    def loss(self, yh, y):
-        #Probability loss
-        probh = yh[:, [0, 3], :, :]
-        prob = torch.zeros(y.shape[0], 2, self.grid, self.grid).to(self.device)
-        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
-        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
-
-        #Detection loss
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
-        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
-
-        detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
-
-        return prob_loss + 5 * detect_loss
+        self.rnn_layers = LSTM(input_size = 4, hidden_size = 4, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 6, self.grid, self.grid))
+        x = x.view((x.size(1), 4))
         return x
 
 class Net(Module):
@@ -175,26 +158,13 @@ class Net(Module):
 
     def __init__(self, device, cnn_model, rnn_model):
         super(Net, self).__init__()
-        self.grid = 7
         self.device = device
         self.cnn_model = cnn_model
         self.rnn_model = rnn_model
 
     def loss(self, yh, y):
-        #Probability loss
-        probh = yh[:, [0, 3], :, :]
-        prob = torch.zeros(y.shape[0], 2, self.grid, self.grid).to(self.device)
-        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
-        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
+        return ((yh[:, :2] - y[:, 0]) ** 2).sum() + ((yh[:, 2:] - y[:, 1]) ** 2).sum()
 
-        #Detection loss
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
-        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
-
-        detect_loss = ((rlegh - y[:, 0, 2:]) ** 2).sum() + ((llegh - y[:, 1, 2:]) ** 2).sum()
-
-        return prob_loss + 5 * detect_loss
 
     def forward(self, x):
         x = self.cnn_model(x)
