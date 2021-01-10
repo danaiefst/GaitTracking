@@ -95,14 +95,14 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            Dropout(0.5),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True)
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
+            Dropout(0.5)
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 4),
+            Linear(784, 4),
             ReLU(inplace=True),
             #Dropout(0.5),
             #Linear(128, 4),    #294 = 6*7*7
@@ -138,7 +138,7 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, batch_size):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device))
+        self.h = (torch.zeros(self.num_of_layers, batch_size, 4).to(self.device), torch.zeros(self.num_of_layers, batch_size, 4).to(self.device))
 
     def __init__(self, device):
         super(RNN, self).__init__()
