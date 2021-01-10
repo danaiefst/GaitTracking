@@ -95,16 +95,18 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Dropout(0.5),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
-            Dropout(0.5)
+            Dropout(0.5),
+            #Conv2d(16, 16, kernel_size=3),
+            #BatchNorm2d(16),
+            #ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 4),    #294 = 6*7*7
-            ReLU(inplace=True)
+            Linear(1296, 4),
+            ReLU(inplace=True),
+            #Dropout(0.5),
+            #Linear(128, 4),    #294 = 6*7*7
+            #ReLU(inplace=True)
         )
 
         self.TCN = TemporalConvNet(6 * self.grid * self.grid, [6 * self.grid * self.grid])

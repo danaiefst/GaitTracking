@@ -28,14 +28,14 @@ else:
     model1 = tracking_nn.CNN(device).to(device)
     model2 = tracking_nn.RNN(device).to(device)
     model = tracking_nn.Net(device, model1, model2).to(device)
-data = data_handler.LegDataLoader(cnn=1)
+data = data_handler.LegDataLoader()
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
 
 # Train the nn
 grid = 7
-epochs = 100
+epochs = 1000
 patience = 1
 learning_rate = 0.01
 optimizer = Adam(model.parameters(), lr = learning_rate)
@@ -64,11 +64,8 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 20:
+    if epoch == 20 or epoch == 50 or epoch == 100:
         learning_rate *= 0.1
-        optimizer = Adam(model.parameters(), lr = learning_rate)
-    if epoch == 30:
-        learning_rate /= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
