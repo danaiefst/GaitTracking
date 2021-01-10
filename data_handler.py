@@ -18,7 +18,7 @@ def mirrori(img):
     return new_img
 
 def mirrorl(labels):
-    new_labels = torch.tensor([[labels[1, 0], img_side - 1 - labels[1, 1]], [labels[0, 0], img_side - 1 - labels[0, 1]]])
+    new_labels = torch.tensor([[labels[1, 0], 1 - labels[1, 1]], [labels[0, 0], 1 - labels[0, 1]]])
     return new_labels
 
 def shifti(img, x, y):
@@ -58,8 +58,8 @@ def transformi(img):
 def transforml(label):
     ret = []
     for s in shifts:
-        new_label = label + s
-        if new_label[0, 0] <= img_side - 1 and new_label[0, 1] <= img_side - 1 and new_label[1][0] <= img_side - 1 and new_label[1][1] <= img_side - 1:
+        new_label = label + s / (img_side - 1)
+        if new_label[0, 0] <= 1 and new_label[0, 1] <= 1 and new_label[1][0] <= 1 and new_label[1][1] <= 1:
             ret.append(new_label)
         else:
             print("Out of bounds", s)
@@ -164,10 +164,10 @@ class LegDataLoader():
         img = img.view(1, *img.shape)
 
         center = self.online_data[self.online_i][self.online_j][1]
-        y1 = (center[0] - min_width) / (max_width - min_width) * img_side
-        x1 = img_side - (center[1] - min_height) / (max_height - min_height) * img_side
-        y2 = (center[2] - min_width) / (max_width - min_width) * img_side
-        x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
+        y1 = (center[0] - min_width) / (max_width - min_width)
+        x1 = 1 - (center[1] - min_height) / (max_height - min_height)
+        y2 = (center[2] - min_width) / (max_width - min_width)
+        x2 = 1 - (center[3] - min_height) / (max_height - min_height)
         tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
         tag = tag.view(1, *tag.shape)
 
