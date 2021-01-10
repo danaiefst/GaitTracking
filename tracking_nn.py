@@ -47,7 +47,7 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, batch_size, device):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(self.device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(device))
+        self.h = (torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(device), torch.zeros(self.num_of_layers, batch_size, self.grid * self.grid * 6).to(device))
 
     def __init__(self):
         super(RNN, self).__init__()
