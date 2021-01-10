@@ -9,18 +9,40 @@ min_height = 0.1
 max_width = 0.5
 min_width = -0.5
 img_side = 112
+grid = 7
 box = [(-0.25, 0.2), (0.22, 1)]
-shifts = torch.tensor([[-15, 10], [-10, -10], [-10, 10], [-5, 10], [-7, 5], [2, 10]], dtype=torch.double)
+shifts = [(-15, 10), (-10, -10), (-10, 10), (-5, 10), (-7, 5), (2, 10)]
 torch.set_default_dtype(torch.double)
 
+
+def find_center(labels):
+    x1 = img_side / grid * labels[0][0] + img_side / grid * labels[0][2]
+    y1 = img_side / grid * labels[0][1] + img_side / grid * labels[0][3]
+    x2 = img_side / grid * labels[1][0] + img_side / grid * labels[1][2]
+    y2 = img_side / grid * labels[1][1] + img_side / grid * labels[1][3]
+    return int(x1), int(y1), int(x2), int(y2)
 
 def mirrori(img):
     new_img = img.flip(-1)
     return new_img
 
 def mirrorl(labels):
-    new_labels = torch.tensor([[labels[1, 0], img_side - 1 - labels[1, 1]], [labels[0, 0], img_side - 1 - labels[0, 1]]])
+    new_labels = torch.tensor([[labels[1][0], grid - 1 - labels[1][1], labels[1][2], 1 - labels[1][3]], [labels[0][0], grid - 1 - labels[0][1], labels[0][2], 1 - labels[0][3]]], dtype=torch.double)
     return new_labels
+
+def shift_coord(xcell, xcenter, xshift):
+    x = img_side / grid * xcell + img_side / grid * xcenter + xshift
+    temp = x / img_side * grid
+    return int(temp), temp % 1
+
+def rot_coord(x, y, angle):
+    a = angle * pi / 180
+    x -= 99
+    y -= 50
+    new_x = x * cos(a) - y * sin(a) + 99
+    new_y = x * sin(a) + y * cos(a) + 49
+    return new_x, new_y
+
 
 def shifti(img, x, y):
     new_img = torch.zeros(img.shape, dtype=torch.double)
@@ -34,9 +56,44 @@ def shifti(img, x, y):
         new_img[:img.shape[0] + x, :img.shape[1] + y] = img[-x:, -y:]
     return new_img
 
+def shiftl(labels, x, y):
+    xcell1, xcenter1 = shift_coord(labels[0][0], labels[0][2], x)
+    xcell2, xcenter2 = shift_coord(labels[1][0], labels[1][2], x)
+    ycell1, ycenter1 = shift_coord(labels[0][1], labels[0][3], y)
+    ycell2, ycenter2 = shift_coord(labels[1][1], labels[1][3], y)
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]], dtype=torch.double)
+    return new_labels
+
+def rotatei(img, angle):
+    # Rotate img
+    new_img = torch.zeros(img.shape, dtype=torch.double)
+    x, y = torch.where(img == 1)
+    new_x, new_y = rot_coord(x, y, angle)
+    new_img[new_x.long(), new_y.long()] = 1
+    return new_img
+
+def rotatel(labels, angle):
+    # Rotate labels
+    x1 = img_side / grid * labels[0][0] + img_side / grid * labels[0][2]
+    y1 = img_side / grid * labels[0][1] + img_side / grid * labels[0][3]
+    x2 = img_side / grid * labels[1][0] + img_side / grid * labels[1][2]
+    y2 = img_side / grid * labels[1][1] + img_side / grid * labels[1][3]
+    x1, y1 = rot_coord(x1, y1, angle)
+    x2, y2 = rot_coord(x2, y2, angle)
+    temp = x1 / img_side * grid
+    xcell1, xcenter1 = int(temp), temp % 1
+    temp = y1 / img_side * grid
+    ycell1, ycenter1 = int(temp), temp % 1
+    temp = x2 / img_side * grid
+    xcell2, xcenter2 = int(temp), temp % 1
+    temp = y2 / img_side * grid
+    ycell2, ycenter2 = int(temp), temp % 1
+    new_labels = torch.tensor([[xcell1, ycell1, xcenter1, ycenter1], [xcell2, ycell2, xcenter2, ycenter2]], dtype=torch.double)
+    return new_labels
+
 def print_data(img, labels, fast=0):
     image = img.detach().clone()
-    x1, y1, x2, y2 = int(labels[0, 0]), int(labels[0, 1]), int(labels[1, 0]), int(labels[1, 1])
+    x1, y1, x2, y2 = find_center(labels)
     image[x1, y1] = 0.2
     image[x2, y2] = 0.8
     plt.imshow(image)
@@ -50,8 +107,7 @@ def print_data(img, labels, fast=0):
 def transformi(img):
     ret = []
     for s in shifts:
-        #print(int(s[0]), s[1])
-        new_img = shifti(img, int(s[0]), int(s[1]))
+        new_img = shifti(img, *s)
         ret.append(new_img)
     ret.append(mirrori(img))
     return ret
@@ -59,8 +115,8 @@ def transformi(img):
 def transforml(label):
     ret = []
     for s in shifts:
-        new_label = label + s
-        if new_label[0, 0] <= img_side - 1 and new_label[0, 1] <= img_side - 1 and new_label[1][0] <= img_side - 1 and new_label[1][1] <= img_side - 1:
+        new_label = shiftl(label, *s)
+        if new_label[0][0] <= 6 and new_label[0][1] <= 6 and new_label[1][0] <= 6 and new_label[1][1] <= 6:
             ret.append(new_label)
         else:
             print("Out of bounds", s)
@@ -165,11 +221,11 @@ class LegDataLoader():
         img = img.view(1, *img.shape)
 
         center = self.online_data[self.online_i][self.online_j][1]
-        y1 = (center[0] - min_width) / (max_width - min_width) * img_side
-        x1 = img_side - (center[1] - min_height) / (max_height - min_height) * img_side
-        y2 = (center[2] - min_width) / (max_width - min_width) * img_side
-        x2 = img_side - (center[3] - min_height) / (max_height - min_height) * img_side
-        tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
+        y1 = (center[0] - min_width) / (max_width - min_width) * grid
+        x1 = grid - (center[1] - min_height) / (max_height - min_height) * grid
+        y2 = (center[2] - min_width) / (max_width - min_width) * grid
+        x2 = grid - (center[3] - min_height) / (max_height - min_height) * grid
+        tag = torch.tensor([[int(x1), int(y1), x1 % 1, y1 % 1], [int(x2), int(y2), x2 % 1, y2 % 1]], dtype=torch.double)
         tag = tag.view(1, *tag.shape)
 
         #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1

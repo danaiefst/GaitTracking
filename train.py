@@ -17,7 +17,7 @@ if check == 0:
 elif check == 1:
     model1 = tracking_nn.CNN(device)
     print("edo1")
-    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_cnn_model.pt", map_location = device))
+    model1.load_state_dict(torch.load("/home/athdom/GaitTracking/cnn_model.pt", map_location = device))
     print("edo2")
     for param in model1.parameters():
         param.requires_grad = False
@@ -45,7 +45,7 @@ if check == 0:
 else:
     save_path = "/home/athdom/GaitTracking/model.pt"
 
-"""def eucl_dist(out, labels):
+def eucl_dist(out, labels):
     ret = 0
     for i in range(out.shape[0]):
         yh = out[i]
@@ -56,10 +56,7 @@ else:
         x1, y1 = detect_cell1 // grid, detect_cell1 % grid
         x2, y2 = detect_cell2 // grid, detect_cell2 % grid
         ret += torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0] - labels[i, 0, 2]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1] - labels[i, 0, 3]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0] - labels[i, 1, 2]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1] - labels[i, 1, 3]) ** 2).item()
-    return ret / out.shape[0] / 2"""
-
-def eucl_dist(out, labels):
-    return (torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum()) / out.shape[0] / 2
+    return ret / out.shape[0] / 2
 
 print("Started training...")
 for epoch in range(epochs):
