@@ -42,6 +42,7 @@ for epoch in range(epochs):
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
+        #print("labels", labels[0])
         loss = model.loss(outputs, labels)
         loss.backward()
         optimizer.step()
