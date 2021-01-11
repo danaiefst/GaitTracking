@@ -1,8 +1,6 @@
 import torch
-import numpy as np
 from matplotlib import pyplot as plt
 import data_handler
-from scipy.ndimage import rotate
 import tracking_nn
 import time
 

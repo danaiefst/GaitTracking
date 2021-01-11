@@ -1,10 +1,7 @@
 import torch
-import numpy as np
 from matplotlib import pyplot as plt
 import data_handler
-from scipy.ndimage import rotate
 import tracking_nn
-import time
 
 torch.cuda.manual_seed(1)
 torch.manual_seed(1)
@@ -104,4 +101,4 @@ while(flag >= 0):
         all_dists.extend(eucl_dist(output, label))
         #check_out(img, output, label)
 all_dists.sort()
-print("Mean dist:", sum(all_dists) / len(all_dists) / 7, "Max dist:", max(all_dists) / 7, "Median dist:", median(all_dists) / 7)
+print("Mean dist:", sum(all_dists) / len(all_dists) / (grid - 1), "Max dist:", max(all_dists) / (grid - 1), "Median dist:", median(all_dists) / (grid - 1))
