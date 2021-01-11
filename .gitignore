@@ -8,6 +8,8 @@ p11/3.a/data/*
 p11/3.a/labels/*
 p16/3.a/data/*
 p16/3.a/labels/*
+p17/2.a/data/*
+p17/2.a/labels/*
 p17/3.a/data/*
 p17/3.a/labels/*
 p18/2.a/data/*
@@ -32,7 +34,6 @@ p18/2.a/data_cnn/*
 p18/2.a/labels_cnn/*
 p18/3.a/data_cnn/*
 p18/3.a/labels_cnn/*
-model*
 *.save
 *.pyc
-cnn_model.pt
+*.pt
