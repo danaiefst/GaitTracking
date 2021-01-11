@@ -48,7 +48,7 @@ def eucl_dist(out, labels):
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
         x1, y1 = detect_cell1 // (grid - 1), detect_cell1 % (grid - 1)
         x2, y2 = detect_cell2 // (grid - 1), detect_cell2 % (grid - 1)
-        ret += (torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2).item()
+        ret += (torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2)).item()
     return ret / out.shape[0] / 2
 
 print("Started training...")
@@ -58,7 +58,7 @@ for epoch in range(epochs):
         learning_rate *= 0.5
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
-        model.init_hidden(1)
+        model.init_hidden()
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)

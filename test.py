@@ -11,7 +11,7 @@ max_height = 1.2
 min_height = 0.2
 max_width = 0.5
 min_width = -0.5
-
+grid = 7
 
 def print_data(img, found, real):
     y,x = torch.where(img)
@@ -36,7 +36,7 @@ def print_data(img, found, real):
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
     plt.show()
     #plt.show(block=False)
-    #plt.pause(min_height)
+    #plt.pause(0.01)
     #plt.clf()
 
 def check_out(batch, out, label):

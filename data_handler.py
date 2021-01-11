@@ -8,8 +8,9 @@ min_height = 0.2
 max_width = 0.5
 min_width = -0.5
 img_side = 112
+grid = 7
 box = [(-0.25, 0.2), (0.22, 1)]
-shifts = torch.tensor([[-15, 10], [-10, -10], [-10, 10], [-5, 10], [-7, 5], [2, 10]], dtype=torch.double)
+shifts = torch.tensor([[-15, 10], [-10, -10], [-10, 10], [-5, 10], [-7, 5], [0, 10]], dtype=torch.double)
 torch.set_default_dtype(torch.double)
 
 
@@ -62,6 +63,7 @@ def transforml(label):
         if new_label[0, 0] <= 1 and new_label[0, 1] <= 1 and new_label[1][0] <= 1 and new_label[1][1] <= 1:
             ret.append(new_label)
         else:
+            print(label, label + s / (img_side - 1))
             print("Out of bounds", s)
     ret.append(mirrorl(label))
     return ret

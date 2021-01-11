@@ -24,10 +24,10 @@ def print_data(img, labels, fast=0):
 
 for i in range(len(data_paths)):
     print(data_paths[i])
-    data = sorted(os.listdir(data_paths[i] + "/data_cnn"), key = lambda a: int(a.split(".")[0]))
+    data = sorted(os.listdir(data_paths[i] + "/data"), key = lambda a: int(a.split(".")[0]))
     for j in range(len(data)):
-        img = torch.load(os.path.join(data_paths[i], "data_cnn", data[j]))
-        labels = torch.load(os.path.join(data_paths[i], "labels_cnn", data[j]))
+        img = torch.load(os.path.join(data_paths[i], "data", data[j]))
+        labels = torch.load(os.path.join(data_paths[i], "labels", data[j]))
         plt.title(data[j])
         print_data(img, labels, 0.0001)
 
