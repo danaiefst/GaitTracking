@@ -17,16 +17,16 @@ cnn = tracking_nn.CNN().to(device)
 #    param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(data_paths = data_paths)
+data = data_handler.LegDataLoader()
 print("Loading dataset...")
-train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(64)
 
 
 # Train the nn
 
 epochs = 1000
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.1
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 save_path = "/home/athdom/GaitTracking/cnn_model.pt"
@@ -37,8 +37,8 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 20 or epoch == 50:
-        learning_rate *= 0.1
+    if epoch % 20 == 0:
+        learning_rate *= 0.5
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         model.init_hidden(1)

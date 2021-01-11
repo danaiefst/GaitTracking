@@ -76,7 +76,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        return self.rnn(self.cnn(x))
+        return self.cnn(x)
+        #return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
-        return ((yh[:, :2] - y[:, 0]) ** 2).sum() + ((yh[:, 2:] - y[:, 1]) ** 2).sum()
+        return (((yh[:, :2] - y[:, 0]) ** 2).sum() + ((yh[:, 2:] - y[:, 1]) ** 2).sum())
