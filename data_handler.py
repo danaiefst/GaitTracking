@@ -165,8 +165,8 @@ class LegDataLoader():
         in_box1 = np.logical_and(box[0][0] < laser_spots[:, 0], laser_spots[:, 0] < box[1][0])
         in_box2 = np.logical_and(box[0][1] < laser_spots[:, 1], laser_spots[:, 1] < box[1][1])
         in_box = np.logical_and(in_box1, in_box2)
-        y = np.round((laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side)
-        x = img_side - np.round((laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side)
+        y = (laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side
+        x = img_side - (laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side
         img[x.astype(int), y.astype(int)] = 1
         img = img.view(1, *img.shape)
 
