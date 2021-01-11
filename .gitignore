@@ -26,6 +26,8 @@ p16/3.a/data_cnn/*
 p16/3.a/labels_cnn/*
 p17/3.a/data_cnn/*
 p17/3.a/labels_cnn/*
+p17/2.a/data_cnn/*
+p17/2.a/labels_cnn/*
 p18/2.a/data_cnn/*
 p18/2.a/labels_cnn/*
 p18/3.a/data_cnn/*
