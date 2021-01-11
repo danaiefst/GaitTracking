@@ -2,6 +2,7 @@ import torch
 from torch.nn import LSTM, Linear, ReLU, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d, Dropout
 
 torch.set_default_dtype(torch.double)
+grid = 7
 
 class CNN(Module):
     def __init__(self):
@@ -33,41 +34,38 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 4),
+            Linear(784, 6 * grid * grid,
             ReLU(inplace=True)
         )
 
     def forward(self, x):
         x = x.to(torch.double)
-        x = x.reshape(x.size(0), 1, x.size(1), x.size(2))
+        x = x.view(x.size(0), 1, x.size(1), x.size(2))
         x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
-        x = x.view(x.size(0), 4)
+        x = x.view(x.size(0), 6, grid, grid)
         return x
 
-    def loss(self, yh, y):
-        return ((yh[:, :2] - y[:, 0]) ** 2).sum() + ((yh[:, 2:] - y[:, 1]) ** 2).sum()
-
 class RNN(Module):
-    def init_hidden(self, batch_size, device):
-        self.h = (torch.zeros(self.num_of_layers, batch_size, 4).to(device), torch.zeros(self.num_of_layers, batch_size, 4).to(device))
+    def init_hidden(self, device):
+        self.h = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
 
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 4, hidden_size = 4, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 4))
+        x = x.view((x.size(1), 6, grid, grid))
         return x
 
 class Net(Module):
 
-    def init_hidden(self, batch_size):
-        self.rnn.init_hidden(batch_size, self.device)
+    def init_hidden(self):
+        self.rnn.init_hidden(self.device)
 
     def __init__(self, device, cnn, rnn):
         super(Net, self).__init__()
@@ -80,4 +78,17 @@ class Net(Module):
         #return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
-        return (((yh[:, :2] - y[:, 0]) ** 2).sum() + ((yh[:, 2:] - y[:, 1]) ** 2).sum())
+        #Probability loss
+        probh = yh[:, [0, 3], :, :]
+        prob = torch.zeros(y.shape[0], 2, grid, grid).to(self.device)
+        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
+        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
+        prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
+
+        #Detection loss
+        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
+        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
+
+        detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
+
+        return prob_loss + detect_loss

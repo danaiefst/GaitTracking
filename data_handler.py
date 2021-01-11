@@ -69,9 +69,10 @@ def transforml(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
+    def __init__(self, grid = 7, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
         self.data_paths = data_paths
         self.cnn = cnn
+        self.grid = 7
         if online:
             os.chdir(data_paths[0])
             valid = open("valid.txt", "r")
@@ -108,18 +109,18 @@ class LegDataLoader():
                 vid_batchl.append(torch.stack(batch_labels, dim = 0))
                 if self.cnn:
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
-                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
+                    batch_labels = [(grid - 1) * torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
                 else:
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data/" + frame)]
-                    batch_labels = [torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
+                    batch_labels = [(grid - 1) * torch.load(self.data_paths[vid_i] + "/labels/" + frame)]
                 i = batch_size - 1
             else:
                 if self.cnn:
                     batch_data.append(torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame))
-                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
+                    batch_labels.append((grid - 1) * torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame))
                 else:
                     batch_data.append(torch.load(self.data_paths[vid_i] + "/data/" + frame))
-                    batch_labels.append(torch.load(self.data_paths[vid_i] + "/labels/" + frame))
+                    batch_labels.append((grid - 1) * torch.load(self.data_paths[vid_i] + "/labels/" + frame))
                 i -= 1
             prev_frame = frame_i
         if batch_data != []:
@@ -173,10 +174,10 @@ class LegDataLoader():
 
         #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
         if self.online_i == len(self.online_data) - 1:
-            return -1, img, tag
+            return -1, img, (grid - 1) * tag
         if self.online_j == len(self.online_data[self.online_i]) - 1:
             self.online_j = 0
             self.online_i += 1
-            return 1, img, tag
+            return 1, img, (grid - 1) * tag
         self.online_j += 1
-        return 0, img, tag
+        return 0, img, (grid - 1) * tag

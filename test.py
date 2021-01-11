@@ -6,7 +6,7 @@ from scipy.ndimage import rotate
 import tracking_nn
 import time
 
-img_side = (img_side - 1)
+img_side = 112
 max_height = 1.2
 min_height = 0.1
 max_width = 0.5
@@ -43,7 +43,11 @@ def check_out(batch, out, label):
         print_data(y, out[i], label[i])
 
 def eucl_dist(out, labels):
-    return (torch.sqrt(((out[:, :2] - labels[:, 0]) ** 2).sum(axis = 1)).sum() + torch.sqrt(((out[:, 2:] - labels[:, 1]) ** 2).sum(axis = 1)).sum()) / out.shape[0] / 2
+    ret = []
+    for i in range(len(out)):
+        ret.append(torch.sqrt(((out[i, :2] - labels[i, 0]) ** 2).sum()).item())
+        ret.append(torch.sqrt(((out[i, 2:] - labels[i, 1]) ** 2).sum()).item())
+    return ret
 
 def median(l):
     # l sorted list
@@ -53,13 +57,14 @@ def median(l):
         return l[len(l) // 2]
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p18/3.a"]#,"/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths = data_paths)
 print("Loading dataset...")
 tx, ty, vx, vy, _, _ = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
-net = tracking_nn.Net(device)
+cnn = tracking_nn.CNN()
+rnn = tracking_nn.RNN()
+net = tracking_nn.Net(device, cnn, rnn)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
 net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
@@ -76,4 +81,4 @@ for i in range(len(vx)):
         #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 
 all_dists.sort()
-print("Mean dist:", sum(all_dists) / len(all_dists) / (img_side - 1), "Max dist:", max(all_dists) / (img_side - 1), "Median dist:", median(all_dists) / (img_side - 1))
+print("Mean dist:", sum(all_dists) / len(all_dists), "Max dist:", max(all_dists), "Median dist:", median(all_dists))
