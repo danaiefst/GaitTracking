@@ -42,7 +42,7 @@ for data_path in range(len(data_paths)):
         in_box = np.logical_and(in_box1, in_box2)
         y = (laser_spots[in_box][:, 0] - min_width) / (max_width - min_width) * img_side
         x = img_side - (laser_spots[in_box][:, 1] - min_height) / (max_height - min_height) * img_side
-        img[x.long(), y.long()] = 1
+        img[x.astype(int), y.astype(int)] = 1
         images.append(img)
 
         center = centers[i]
