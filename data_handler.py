@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 max_height = 1.2
-min_height = 0.1
+min_height = 0.2
 max_width = 0.5
 min_width = -0.5
 img_side = 112
@@ -65,6 +65,10 @@ def transforml(label):
             print("Out of bounds", s)
     ret.append(mirrorl(label))
     return ret
+
+def find_center(label):
+    ret = label / (grid - 1) * (img_side - 1)
+    return ret[0], ret[1], ret[2], ret[3]
 
 class LegDataLoader():
 

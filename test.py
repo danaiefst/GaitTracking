@@ -8,24 +8,25 @@ import time
 
 img_side = 112
 max_height = 1.2
-min_height = 0.1
+min_height = 0.2
 max_width = 0.5
 min_width = -0.5
 
+
 def print_data(img, found, real):
     y,x = torch.where(img)
-    y = (img_side - 1 - y) / (img_side - 1) * (max_height - min_height) + min_height
-    x = x / (img_side - 1.0) - max_width
-    y1,x1,y2,x2 = real[0, 1], real[0, 0], real[1, 1], real[1, 0]
+    y = ((img_side - 1) - y) / (img_side - 1.0) * (max_height - min_height) + min_height
+    x = x / (img_side - 1.0) * (max_width - min_width) + min_width
+    y1,x1,y2,x2 = data_handler.find_center(real)
     y1 = ((img_side - 1) - y1) / (img_side - 1.0) * (max_height - min_height) + min_height
     y2 = ((img_side - 1) - y2) / (img_side - 1.0) * (max_height - min_height) + min_height
-    x1 = x1 / (img_side - 1) - max_width
-    x2 = x2 / (img_side - 1) - max_width
-    y1h,x1h,y2h,x2h = found[1], found[0], found[3], found[2]
+    x1 = x1 / (img_side - 1) * (max_width - min_width) + min_width
+    x2 = x2 / (img_side - 1) * (max_width - min_width) + min_width
+    y1h,x1h,y2h,x2h = data_handler.find_center(found)
     y1h = ((img_side - 1) - y1h) / (img_side - 1.0) * (max_height - min_height) + min_height
     y2h = ((img_side - 1) - y2h) / (img_side - 1.0) * (max_height - min_height) + min_height
-    x1h = x1h / (img_side - 1.0) - max_width
-    x2h = x2h / (img_side - 1.0) - max_width
+    x1h = x1h / (img_side - 1.0) * (max_width - min_width) + min_width
+    x2h = x2h / (img_side - 1.0) * (max_width - min_width) + min_width
     plt.xlim(min_width, max_width)
     plt.ylim(min_height, max_height)
     plt.scatter(x,y, c = 'b', marker = '.')
@@ -35,18 +36,34 @@ def print_data(img, found, real):
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
     plt.show()
     #plt.show(block=False)
-    #plt.pause(0.1)
+    #plt.pause(min_height)
     #plt.clf()
 
 def check_out(batch, out, label):
     for i in range(out.shape[0]):
-        print_data(y, out[i], label[i])
+        y = batch[i]
+        yh = out[i]
+        p1_h = yh[0, :, :]
+        p2_h = yh[3, :, :]
+        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
+        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
+        x_cell1, y_cell1 = detect_cell1 // grid, detect_cell1 % grid
+        x_cell2, y_cell2 = detect_cell2 // grid, detect_cell2 % grid
+        print_data(y, [[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]], label[i])
+
 
 def eucl_dist(out, labels):
     ret = []
-    for i in range(len(out)):
-        ret.append(torch.sqrt(((out[i, :2] - labels[i, 0]) ** 2).sum()).item())
-        ret.append(torch.sqrt(((out[i, 2:] - labels[i, 1]) ** 2).sum()).item())
+    for i in range(out.shape[0]):
+        yh = out[i]
+        p1_h = yh[0, :, :]
+        p2_h = yh[3, :, :]
+        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
+        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
+        x1, y1 = detect_cell1 // (grid - 1), detect_cell1 % (grid - 1)
+        x2, y2 = detect_cell2 // (grid - 1), detect_cell2 % (grid - 1)
+        ret.append(torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2).item())
+        ret.append(torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2).item())
     return ret
 
 def median(l):
@@ -81,4 +98,4 @@ for i in range(len(vx)):
         #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
 
 all_dists.sort()
-print("Mean dist:", sum(all_dists) / len(all_dists), "Max dist:", max(all_dists), "Median dist:", median(all_dists))
+print("Mean dist:", sum(all_dists) / len(all_dists) / (grid - 1), "Max dist:", max(all_dists) / (grid - 1), "Median dist:", median(all_dists) / (grid - 1))

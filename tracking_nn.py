@@ -34,7 +34,7 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 6 * grid * grid,
+            Linear(784, 6 * grid * grid),
             ReLU(inplace=True)
         )
 

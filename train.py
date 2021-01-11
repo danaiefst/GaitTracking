@@ -30,6 +30,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 epochs = 1000
 patience = 1
 learning_rate = 0.01
+grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 if flag:
@@ -45,9 +46,9 @@ def eucl_dist(out, labels):
         p2_h = yh[3, :, :]
         detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
-        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
-        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-        ret += ((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2 + (x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2).item()
+        x1, y1 = detect_cell1 // (grid - 1), detect_cell1 % (grid - 1)
+        x2, y2 = detect_cell2 // (grid - 1), detect_cell2 % (grid - 1)
+        ret += (torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2) + torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2).item()
     return ret / out.shape[0] / 2
 
 print("Started training...")
@@ -80,7 +81,7 @@ for epoch in range(epochs):
                 dist += eucl_dist(output, label)
             if acc < best_acc:
                 best_acc = acc
-                print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x))
+                print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x) / (grid - 1) * 100) #mean dist in cm
                 if flag:
                     torch.save(model.state_dict(), save_path)
                 else:
