@@ -7,12 +7,12 @@ from matplotlib import pyplot as plt
 
 #data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]
 #data_paths1=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/3.a", "/home/athdom/GaitTracking/p18/2.a"]
-#data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a"]
-#data_paths1=["/home/danai/Desktop/GaitTracking/p1/2.a"]
+data_paths=["/gpu-data/athdom/p17/2.a"]
+data_paths1=["/home/athdom/GaitTracking/p17/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
 #data_paths1=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-data_paths1=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+#data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+#data_paths1=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 
 
 for data_path in range(len(data_paths)):
@@ -85,31 +85,31 @@ for data_path in range(len(data_paths)):
                torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
                file += 1
             i += 1
-    if data_path < len(data_paths[:-2]):
-        np.random.seed(0)
-        r = np.random.randint(0, len(new_points_r) - 1, 1000)
-        l = np.random.randint(0, len(new_points_l) - 1, 1000)
-        x_l = np.random.random(10)
-        y_l = np.random.random(10)
-        x_r = np.random.random(10)
-        y_r = np.random.random(10)
-        for i in range(len(r)):
-            for j in range(10):
-                img = torch.zeros((img_side, img_side), dtype=torch.double)
-                leg1_x = new_points_r[r[i]][0] + x_r[j] - new_points_r[r[i]][2]
-                leg1_y = new_points_r[r[i]][1] + y_r[j] - new_points_r[r[i]][3]
-                leg2_x = new_points_l[l[i]][0] + x_l[j] - new_points_l[l[i]][2]
-                leg2_y = new_points_l[l[i]][1] + y_l[j] - new_points_l[l[i]][3]
-                valid_leg1 = (leg1_x >= 0) * (leg1_x <= 1) * (leg1_y >= 0) * (leg1_y <= 1)
-                valid_leg2 = (leg2_x >= 0) * (leg2_x <= 1) * (leg2_y >= 0) * (leg2_y <= 1)
-                img[(leg1_x[valid_leg1] * (img_side - 1)).astype(int), (leg1_y[valid_leg1] * (img_side - 1)).astype(int)] = 1
-                img[(leg2_x[valid_leg2] * (img_side - 1)).astype(int), (leg2_y[valid_leg2] * (img_side - 1)).astype(int)] = 1
-                label1 = [x_r[j], y_r[j]]
-                label2 = [x_l[j], y_l[j]]
-                if y_r[j] > y_l[j]:
-                    tag = torch.tensor([label2, label1], dtype=torch.double)
-                else:
-                    tag = torch.tensor([label1, label2], dtype=torch.double)
-                torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
-                torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
-                file += 1
+    #if data_path < len(data_paths[:-2]):
+    np.random.seed(0)
+    r = np.random.randint(0, len(new_points_r) - 1, 1000)
+    l = np.random.randint(0, len(new_points_l) - 1, 1000)
+    x_l = np.random.random(10)
+    y_l = np.random.random(10)
+    x_r = np.random.random(10)
+    y_r = np.random.random(10)
+    for i in range(len(r)):
+        for j in range(10):
+            img = torch.zeros((img_side, img_side), dtype=torch.double)
+            leg1_x = new_points_r[r[i]][0] + x_r[j] - new_points_r[r[i]][2]
+            leg1_y = new_points_r[r[i]][1] + y_r[j] - new_points_r[r[i]][3]
+            leg2_x = new_points_l[l[i]][0] + x_l[j] - new_points_l[l[i]][2]
+            leg2_y = new_points_l[l[i]][1] + y_l[j] - new_points_l[l[i]][3]
+            valid_leg1 = (leg1_x >= 0) * (leg1_x <= 1) * (leg1_y >= 0) * (leg1_y <= 1)
+            valid_leg2 = (leg2_x >= 0) * (leg2_x <= 1) * (leg2_y >= 0) * (leg2_y <= 1)
+            img[(leg1_x[valid_leg1] * (img_side - 1)).astype(int), (leg1_y[valid_leg1] * (img_side - 1)).astype(int)] = 1
+            img[(leg2_x[valid_leg2] * (img_side - 1)).astype(int), (leg2_y[valid_leg2] * (img_side - 1)).astype(int)] = 1
+            label1 = [x_r[j], y_r[j]]
+            label2 = [x_l[j], y_l[j]]
+            if y_r[j] > y_l[j]:
+                tag = torch.tensor([label2, label1], dtype=torch.double)
+            else:
+                tag = torch.tensor([label1, label2], dtype=torch.double)
+            torch.save(img, "{}/data_cnn/{}.pt".format(data_paths[data_path], file))
+            torch.save(tag, "{}/labels_cnn/{}.pt".format(data_paths[data_path], file))
+            file += 1
