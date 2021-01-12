@@ -18,25 +18,29 @@ class CNN(Module):
             #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(32, 64, kernel_size=3),
+            BatchNorm2d(64),
             #Dropout(0.5),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
             #Dropout(0.5),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
             ReLU(inplace=True),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
+            ReLU(inplace=True),
+            Conv2d(64, 64, kernel_size=3),
+            BatchNorm2d(64),
+            Dropout(0.5),
+            ReLU(inplace=True)
         )
 
         self.linear_layers = Sequential(
-            Linear(1568, 512),
-            Dropout(0.5),
-            ReLU(inplace=True),
-            Linear(512, 6 * grid * grid),
+            Linear(576, 6 * grid * grid),
             ReLU(inplace=True)
         )
 
