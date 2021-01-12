@@ -5,8 +5,8 @@ from data_handler import transformi, transforml
 
 #data_paths=["/gpu-data/athdom/p17/2.a"]
 #data_paths1=["/home/athdom/GaitTracking/p17/2.a"]
-data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]
-data_paths1=["/home/athdom/GaitTracking/p1/2.a","/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/2.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/3.a", "/home/athdom/GaitTracking/p18/2.a"]
+data_paths=["/gpu-data/athdom/p18/2.a","/gpu-data/athdom/p18/3.a"]#, "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]
+data_paths1=["/home/athdom/GaitTracking/p18/2.a","/home/athdom/GaitTracking/p18/3.a"]#, "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/2.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/3.a", "/home/athdom/GaitTracking/p18/2.a"]
 #data_paths=["/home/danai/Desktop/GaitTracking/p17/2.a"]#, "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths1=["/home/danai/Desktop/GaitTracking/p17/2.a"]#, "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
@@ -61,13 +61,13 @@ for data_path in range(len(data_paths)):
             #print("Saving", i)
             torch.save(images[i], "{}/data/{}.pt".format(data_paths[data_path], i))
             torch.save(tags[i], "{}/labels/{}.pt".format(data_paths[data_path], i))
-            #if data_path < len(data_paths) - 2:
+            if data_path < len(data_paths) - 2:
             #print(i)
-            transformed = transformi(images[i])
-            for j in range(len(transformed)):
-                torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
-            transformed = transforml(tags[i])
-            for j in range(len(transformed)):
-                torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+                transformed = transformi(images[i])
+                for j in range(len(transformed)):
+                    torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+                transformed = transforml(tags[i])
+                for j in range(len(transformed)):
+                    torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
             #print(i)
             i += 1

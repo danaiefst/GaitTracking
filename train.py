@@ -6,7 +6,7 @@ from torch.optim import Adam
 torch.cuda.manual_seed(1)
 torch.manual_seed(1)
 
-flag = sys.argv[1]
+flag = int(sys.argv[1])
 #data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
@@ -29,7 +29,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 epochs = 1000
 patience = 1
-learning_rate = 0.01
+learning_rate = 0.001
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -55,7 +55,7 @@ print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
     if epoch % 20 == 0:
-        learning_rate *= 0.5
+        learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         model.init_hidden()
