@@ -75,6 +75,8 @@ for epoch in range(epochs):
             acc = 0
             dist = 0
             for input, label in zip(val_set_x, val_set_y):
+                input = input.to(device)
+                label = label.to(device)
                 output = model.forward(input)
                 acc += model.loss(output, label) / i.shape[0]
                 dist += eucl_dist(output, label)
