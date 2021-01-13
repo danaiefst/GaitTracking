@@ -22,7 +22,7 @@ if flag:
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(device = device, data_paths = data_paths)
+data = data_handler.LegDataLoader(data_paths = data_paths)
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
 
@@ -60,7 +60,7 @@ for epoch in range(epochs):
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         model.init_hidden()
-        inputs, labels = train_set_x[i], train_set_y[i]
+        inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
         #print("labels", labels[0])

@@ -75,11 +75,10 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, device, grid = 7, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
+    def __init__(self, grid = 7, cnn = 0, online = 0, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
         self.data_paths = data_paths
         self.cnn = cnn
         self.grid = grid
-        self.device = device
         if online:
             os.chdir(data_paths[0])
             valid = open("valid.txt", "r")
@@ -112,8 +111,8 @@ class LegDataLoader():
             #print(i, frame_i)
             if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                 #print(i, prev_frame, frame_i)
-                vid_batchd.append(torch.stack(batch_data, dim = 0).to(self.device))
-                vid_batchl.append(torch.stack(batch_labels, dim = 0).to(self.device))
+                vid_batchd.append(torch.stack(batch_data, dim = 0))
+                vid_batchl.append(torch.stack(batch_labels, dim = 0))
                 if self.cnn:
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
                     batch_labels = [grid * torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
@@ -131,8 +130,8 @@ class LegDataLoader():
                 i -= 1
             prev_frame = frame_i
         if batch_data != []:
-            vid_batchd.append(torch.stack(batch_data, dim = 0).to(self.device))
-            vid_batchl.append(torch.stack(batch_labels, dim = 0).to(self.device))
+            vid_batchd.append(torch.stack(batch_data, dim = 0))
+            vid_batchl.append(torch.stack(batch_labels, dim = 0))
         return vid_batchd, vid_batchl
 
     def load(self, batch_size):
