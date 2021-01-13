@@ -74,9 +74,7 @@ for epoch in range(epochs):
         with torch.no_grad():
             acc = 0
             dist = 0
-            for i, j in zip(val_set_x, val_set_y):
-                input = i.to(device)
-                label = j.to(device)
+            for input, label in zip(val_set_x, val_set_y):
                 output = model.forward(input)
                 acc += model.loss(output, label) / i.shape[0]
                 dist += eucl_dist(output, label)

@@ -111,8 +111,8 @@ class LegDataLoader():
             #print(i, frame_i)
             if i == 0 or prev_frame and prev_frame + 1 != frame_i:
                 #print(i, prev_frame, frame_i)
-                vid_batchd.append(torch.stack(batch_data, dim = 0))
-                vid_batchl.append(torch.stack(batch_labels, dim = 0))
+                vid_batchd.append(torch.stack(batch_data, dim = 0).to(self.device))
+                vid_batchl.append(torch.stack(batch_labels, dim = 0).to(self.device))
                 if self.cnn:
                     batch_data = [torch.load(self.data_paths[vid_i] + "/data_cnn/" + frame)]
                     batch_labels = [grid * torch.load(self.data_paths[vid_i] + "/labels_cnn/" + frame)]
