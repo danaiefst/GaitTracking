@@ -59,7 +59,7 @@ for epoch in range(epochs):
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         model.init_hidden()
-        inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
+        inputs, labels = train_set_x[i], train_set_y[i]
         optimizer.zero_grad()
         outputs = model.forward(inputs)
         #print("labels", labels[0])

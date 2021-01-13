@@ -130,8 +130,8 @@ class LegDataLoader():
                 i -= 1
             prev_frame = frame_i
         if batch_data != []:
-            vid_batchd.append(torch.stack(batch_data, dim = 0))
-            vid_batchl.append(torch.stack(batch_labels, dim = 0))
+            vid_batchd.append(torch.stack(batch_data, dim = 0).to(self.device))
+            vid_batchl.append(torch.stack(batch_labels, dim = 0).to(self.device))
         return vid_batchd, vid_batchl
 
     def load(self, batch_size):
