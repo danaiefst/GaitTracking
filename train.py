@@ -78,7 +78,7 @@ for epoch in range(epochs):
                 input = input.to(device)
                 label = label.to(device)
                 output = model.forward(input)
-                acc += model.loss(output, label) / i.shape[0]
+                acc += model.loss(output, label) / input.shape[0]
                 dist += eucl_dist(output, label)
             if acc < best_acc:
                 best_acc = acc
