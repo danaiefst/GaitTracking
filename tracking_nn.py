@@ -27,6 +27,7 @@ class CNN(Module):
             MaxPool2d(kernel_size=2, stride=2),
             Conv2d(32, 32, kernel_size=3),
             BatchNorm2d(32),
+            Dropout(0.5),
             ReLU(inplace=True),
             #Conv2d(16, 16, kernel_size=3),
             #BatchNorm2d(16),
@@ -34,10 +35,10 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(2592, 1024),
+            Linear(2592, 784),
             Dropout(0.5),
             ReLU(inplace=True),
-            Linear(1024, 294),    #384 = 6*7*7
+            Linear(784, 294),    #384 = 6*7*7
             ReLU(inplace=True)
         )
 
