@@ -8,26 +8,26 @@ class CNN(Module):
     def __init__(self):
         super(CNN, self).__init__()
         self.cnn_layers = Sequential(
-            Conv2d(1, 32, kernel_size=7, stride=2),
-            BatchNorm2d(32),
+            Conv2d(1, 16, kernel_size=7, stride=2),
+            BatchNorm2d(16),
             Dropout(0.5),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3, padding = 2),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3, padding = 2),
+            BatchNorm2d(16),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3, padding = 1),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3, padding = 1),
+            BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             ReLU(inplace=True),
             MaxPool2d(kernel_size=2, stride=2),
-            Conv2d(32, 32, kernel_size=3),
-            BatchNorm2d(32),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
             ReLU(inplace=True),
             #Conv2d(16, 16, kernel_size=3),
             #BatchNorm2d(16),
@@ -35,7 +35,7 @@ class CNN(Module):
         )
 
         self.linear_layers = Sequential(
-            Linear(2592, 784),
+            Linear(1296, 784),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(784, 294),    #384 = 6*7*7
@@ -95,4 +95,4 @@ class Net(Module):
 
         detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
 
-        return prob_loss + detect_loss
+        return 5 * prob_loss + detect_loss
