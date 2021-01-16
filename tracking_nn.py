@@ -10,7 +10,6 @@ class CNN(Module):
         self.cnn_layers = Sequential(
             Conv2d(1, 16, kernel_size=7, stride=2),
             BatchNorm2d(16),
-            Dropout(0.5),
             ReLU(inplace=True),
             Conv2d(16, 16, kernel_size=3, padding = 2),
             BatchNorm2d(16),
