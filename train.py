@@ -82,7 +82,7 @@ for epoch in range(epochs):
         if f == -1:
             break
         f, input, label = data.load(0)
-    print("epoch:{}, running loss: {}".format(epoch, running_loss / c)
+    print("epoch:{}, running loss: {}".format(epoch, running_loss / c))
     running_loss = 0
     if epoch >= patience:
         with torch.no_grad():
