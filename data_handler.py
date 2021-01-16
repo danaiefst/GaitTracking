@@ -168,4 +168,4 @@ class LegDataLoader():
                 self.i += 1
                 return 1, torch.stack(batchd), torch.stack(batchl)
             self.j += 1
-            return 0, torch.stack(batchd), torch.stack(batchl)
+        return 0, torch.stack(batchd), torch.stack(batchl)
