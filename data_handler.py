@@ -155,7 +155,7 @@ class LegDataLoader():
             #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
             if self.i == len(data) - 1:
                 self.phase += 1
-                print(self.phase)
+                #print(self.phase)
                 if self.phase > 7:
                     flag = -1
                     self.phase = 0
