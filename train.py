@@ -68,6 +68,7 @@ for epoch in range(epochs):
     model.init_hidden()
     c = 0
     while(True):
+        print(f, input.shape)
         if f:
             model.init_hidden()
         input, label = input.to(device), label.to(device)
