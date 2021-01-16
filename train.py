@@ -30,7 +30,7 @@ train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.lo
 
 epochs = 1000
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.01
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -78,7 +78,7 @@ for epoch in range(epochs):
                 input = input.to(device)
                 label = label.to(device)
                 output = model.forward(input)
-                acc += model.loss(output, label) / i.shape[0]
+                acc += model.loss(output, label) / input.shape[0]
                 dist += eucl_dist(output, label)
             if acc < best_acc:
                 best_acc = acc
