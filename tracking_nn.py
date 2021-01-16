@@ -94,4 +94,4 @@ class Net(Module):
 
         detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
 
-        return 5 * prob_loss + detect_loss
+        return prob_loss + detect_loss
