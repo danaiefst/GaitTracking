@@ -143,7 +143,6 @@ class LegDataLoader():
             tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
 
             if self.phase == 0:
-                torch.cat()
                 batchd.append(img)
                 batchl.append(tag * grid)
             elif self.phase == 1:
