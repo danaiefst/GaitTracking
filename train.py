@@ -109,7 +109,7 @@ for epoch in range(epochs):
                 f, input, label = data.load(1)
             if acc < best_acc:
                 best_acc = acc
-                print("Saving model with acc:", acc / c, ", mean dist:", dist / c / grid * 100, ", max dist:", m) #mean dist in cm
+                print("Saving model with acc:", acc / c, ", mean dist:", dist / c / grid * 100, ", max dist:", m / grid * 100) #mean dist in cm
                 if flag:
                     torch.save(model.state_dict(), save_path)
                 else:
