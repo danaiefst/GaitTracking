@@ -117,10 +117,10 @@ class LegDataLoader():
             data = self.train_data
         elif set == 1:
             data = self.val_data
-            self.phase = 7
+            self.phase = 8
         else:
             data = self.test_data
-            self.phase = 7
+            self.phase = 8
         flag = 0
         batchd = []
         batchl = []
@@ -142,7 +142,7 @@ class LegDataLoader():
             x2 = 1 - (center[3] - min_height) / (max_height - min_height)
             tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
 
-            if self.phase == 0:
+            if self.phase == 0 or self.phase == 8:
                 batchd.append(img)
                 batchl.append(tag * grid)
             elif self.phase == 1:
