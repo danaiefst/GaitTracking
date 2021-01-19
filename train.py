@@ -24,12 +24,14 @@ rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(data_paths = data_paths)
 print("Loading dataset...")
+train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(32)
+print(len(train_set_x), len(val_set_x))
 
 # Train the nn
 
 epochs = 1000
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.0001
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -61,55 +63,38 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 10 == 0:
-        learning_rate *= 0.1
-        optimizer = Adam(model.parameters(), lr = learning_rate)
-    f, input, label = data.load(0)
-    model.init_hidden()
-    c = 0
-    while(True):
-        #print(f, input.shape)
-        if f:
-            model.init_hidden()
-        input, label = input.to(device), label.to(device)
+    #if epoch % 15 == 0:
+    #    learning_rate *= 0.1
+    #    optimizer = Adam(model.parameters(), lr = learning_rate)
+    for i in range(len(train_set_x)):
+        model.init_hidden()
+        inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
-        output = model.forward(input)
+        outputs = model.forward(inputs)
         #print("labels", labels[0])
-        loss = model.loss(output, label)
+        loss = model.loss(outputs, labels)
         loss.backward()
         optimizer.step()
-        running_loss += loss.item() / input.shape[0]
-        c += 1
-        if f == -1:
-            break
-        f, input, label = data.load(0)
-    print("epoch:{}, running loss: {}".format(epoch, running_loss / c))
+        running_loss += loss.item() / train_set_x[i].shape[0]
+    print("epoch:{}, running loss: {}".format(epoch, running_loss / len(train_set_x)))
     running_loss = 0
     if epoch >= patience:
         with torch.no_grad():
             acc = 0
             dist = 0
-            c = 0
-            f, input, label = data.load(1)
-            model.init_hidden()
             m = 0
-            while(True):
-                if f:
-                    model.init_hidden()
-                input, label = input.to(device), label.to(device)
+            for i, j in zip(val_set_x, val_set_y):
+                input = i.to(device)
+                label = j.to(device)
                 output = model.forward(input)
-                acc += model.loss(output, label) / input.shape[0]
+                acc += model.loss(output, label) / i.shape[0]
                 m1, d = eucl_dist(output, label)
                 dist += d
                 if m1 > m:
                     m = m1
-                c += 1
-                if f == -1:
-                    break
-                f, input, label = data.load(1)
             if acc < best_acc:
                 best_acc = acc
-                print("Saving model with acc:", acc / c, ", mean dist:", dist / c / grid * 100, ", max dist:", m / grid * 100) #mean dist in cm
+                print("Saving model with acc:", acc / len(val_set_x), ", mean dist:", dist / len(val_set_x) / grid * 100, ", max dist:", m / grid * 100) #mean dist in cm
                 if flag:
                     torch.save(model.state_dict(), save_path)
                 else:

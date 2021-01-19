@@ -5,12 +5,12 @@ from data_handler import transformi, transforml
 
 #data_paths=["/gpu-data/athdom/p17/2.a"]
 #data_paths1=["/home/athdom/GaitTracking/p17/2.a"]
-data_paths=["/gpu-data/athdom/p18/2.a","/gpu-data/athdom/p18/3.a"]#, "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]
-data_paths1=["/home/athdom/GaitTracking/p18/2.a","/home/athdom/GaitTracking/p18/3.a"]#, "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/2.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/3.a", "/home/athdom/GaitTracking/p18/2.a"]
+#data_paths=["/gpu-data/athdom/p18/2.a","/gpu-data/athdom/p18/3.a"]#, "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/3.a", "/gpu-data/athdom/p18/2.a"]
+#data_paths1=["/home/athdom/GaitTracking/p18/2.a","/home/athdom/GaitTracking/p18/3.a"]#, "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/2.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/3.a", "/home/athdom/GaitTracking/p18/2.a"]
 #data_paths=["/home/danai/Desktop/GaitTracking/p17/2.a"]#, "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths1=["/home/danai/Desktop/GaitTracking/p17/2.a"]#, "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-#data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-#data_paths1=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a"]#, "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/2.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+data_paths1=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a", "/home/danai/Desktop/GaitTracking/p17/2.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 for data_path in range(len(data_paths)):
     print(data_paths[data_path])
     os.chdir(data_paths1[data_path])
@@ -57,6 +57,7 @@ for data_path in range(len(data_paths)):
         start, end = line.strip().split(" ")
         i = int(start)
         end = int(end)
+        #print(i, end)
         while i <= end:
             #print("Saving", i)
             torch.save(images[i], "{}/data/{}.pt".format(data_paths[data_path], i))
@@ -65,9 +66,10 @@ for data_path in range(len(data_paths)):
             #print(i)
                 transformed = transformi(images[i])
                 for j in range(len(transformed)):
-                    torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+                    #print("transformed", j * (last + 1) + i)
+                    torch.save(transformed[j], "{}/data/{}.pt".format(data_paths[data_path], (j + 1) * last + i))
                 transformed = transforml(tags[i])
                 for j in range(len(transformed)):
-                    torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], j * (last + 1) + i))
+                    torch.save(transformed[j], "{}/labels/{}.pt".format(data_paths[data_path], (j + 1) * last + i))
             #print(i)
             i += 1
