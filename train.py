@@ -62,7 +62,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 10 == 0:
+    if epoch % 30 == 0:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
