@@ -86,12 +86,33 @@ class Net(Module):
         prob = torch.zeros(y.shape[0], 2, grid, grid).to(self.device)
         prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
         prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
+        prob_loss = ((prob - probh) ** 2).sum()
 
         #Detection loss
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
-        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
+        rposh = probh[:, 0, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        rlegx, rlegy = (rposh // grid).to(self.device), (rposh % grid).to(self.device)
+        rlegh = yh[torch.arange(yh.shape[0]), 1:3, rlegx, rlegy]
 
-        detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
+        lposh = probh[:, 1, :, :].view(prob.shape[0], -1).argmax(axis=1)
+        llegx, llegy = (lposh // grid).to(self.device), (lposh % grid).to(self.device)
+        llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
 
-        return 5 * prob_loss + detect_loss
+        detect_loss = ((rlegh[:, 0] + rlegx.double() - y[:, 0, 0]) ** 2 + (rlegh[:, 1] + rlegy.double() - y[:, 0, 1]) ** 2 + (llegh[:, 0] + llegx.double() - y[:, 1, 0]) ** 2 + (llegh[:, 1] + llegy.double() - y[:, 1, 1]) ** 2).sum()
+
+        return prob_loss + detect_loss
+
+    #def loss(self, yh, y):
+    #    #Probability loss
+    #    probh = yh[:, [0, 3], :, :]
+    #    prob = torch.zeros(y.shape[0], 2, grid, grid).to(self.device)
+    #    prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
+    #    prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
+    #    prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
+
+        #Detection loss
+    #    rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
+    #    llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
+
+    #    detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
+
+    #    return 5 * prob_loss + detect_loss
