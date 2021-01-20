@@ -70,7 +70,7 @@ def transforml(label):
 
 def find_center(label):
     ret = label / grid * img_side
-    return ret[0], ret[1], ret[2], ret[3]
+    return ret[0][0], ret[0][1], ret[1][0], ret[1][1]
 
 class LegDataLoader():
 

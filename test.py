@@ -32,10 +32,10 @@ def print_data(img, found, real):
     plt.scatter(x2, y2, c = 'y', marker = 'v')
     plt.scatter(x1h, y1h, c = 'r', marker = 'o')
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
-    plt.show()
-    #plt.show(block=False)
-    #plt.pause(0.01)
-    #plt.clf()
+    #plt.show()
+    plt.show(block=False)
+    plt.pause(0.1)
+    plt.clf()
 
 def check_out(batch, out, label):
     for i in range(out.shape[0]):
@@ -47,7 +47,7 @@ def check_out(batch, out, label):
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
         x_cell1, y_cell1 = detect_cell1 // grid, detect_cell1 % grid
         x_cell2, y_cell2 = detect_cell2 // grid, detect_cell2 % grid
-        print_data(y, [[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]], label[i])
+        print_data(y, torch.tensor([[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]]), label[i])
 
 
 def eucl_dist(out, labels):
@@ -72,28 +72,28 @@ def median(l):
         return l[len(l) // 2]
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 data = data_handler.LegDataLoader(data_paths = data_paths)
 print("Loading dataset...")
 tx, ty, vx, vy, tsx, tsy = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-cnn = tracking_nn.CNN()
-rnn = tracking_nn.RNN()
-net = tracking_nn.Net(device, cnn, rnn)
+cnn = tracking_nn.CNN().to(device)
+rnn = tracking_nn.RNN().to(device)
+net = tracking_nn.Net(device, cnn, rnn).to(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/best_model.pt", map_location=device)).to(device)
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/best_model.pt", map_location=device))
 all_dists = []
-for i in range(len(vx)):
+for i in range(len(tsx)):
     with torch.no_grad():
-        net.init_hidden(1)
-        batch = vx[i].to(device)
-        print("Calculating validation batch", i)
+        net.init_hidden()
+        batch = tsx[i].to(device)
+        #print("Calculating validation batch", i)
         t = time.time()
         out = net(batch)
         #print("Time taken:", time.time() - t)
-        all_dists.extend(eucl_dist(out, vy[i].to(device)))
-        #check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), vy[i].to(torch.device("cpu")))
+        all_dists.extend(eucl_dist(out, tsy[i].to(device)))
+        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), tsy[i].to(torch.device("cpu")))
 
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / grid, "Max dist:", max(all_dists) / grid, "Median dist:", median(all_dists) / grid)
