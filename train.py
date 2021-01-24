@@ -11,10 +11,10 @@ data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitT
 #data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 path = "/home/athdom/GaitTracking/"
-batch_size = 64
+batch_size = 128
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
@@ -63,7 +63,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 10:
+    if epoch == 25:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
