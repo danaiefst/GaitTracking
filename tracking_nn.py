@@ -3,6 +3,8 @@ from torch.nn import LSTM, Linear, ReLU, Sequential, Conv1d, Conv2d, MaxPool2d, 
 from torch.nn.utils import weight_norm
 
 torch.set_default_dtype(torch.double)
+#torch.manual_seed(1)
+#torch.cuda.manual_seed(1)
 grid = 7
 
 class Chomp1d(Module):
@@ -67,7 +69,7 @@ class TemporalConvNet(Module):
 class TCN(Module):
     def __init__(self, batch_size):
         super(TCN, self).__init__()
-        self.tcn = TemporalConvNet(batch_size, [batch_size, batch_size, batch_size, batch_size], kernel_size=7)
+        self.tcn = TemporalConvNet(batch_size, [batch_size] * 6, kernel_size=7)
         self.batch_size = batch_size
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
@@ -144,18 +146,18 @@ class RNN(Module):
 
 class Net(Module):
 
-    #def init_hidden(self):
-    #    self.rnn.init_hidden(self.device)
+    def init_hidden(self):
+        self.rnn.init_hidden(self.device)
 
-    def __init__(self, device, cnn, tcn):
+    def __init__(self, device, cnn, rnn):
         super(Net, self).__init__()
         self.cnn = cnn
-        self.tcn = tcn
+        self.rnn = rnn
         self.device = device
 
     def forward(self, x):
         #return self.cnn(x)
-        return self.tcn(self.cnn(x))
+        return self.rnn(self.cnn(x))
 
     def loss1(self, yh, y):
         #Probability loss
@@ -194,4 +196,5 @@ class Net(Module):
 
         #Association loss
         assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
-        return prob_loss + 5 * detect_loss + assoc_loss / 150
+        #print(detect_loss * 5, assoc_loss/150)
+        return prob_loss + 5 * detect_loss# + assoc_loss / 150

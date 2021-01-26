@@ -1,27 +1,28 @@
-import data_handler, tracking_nn
 import torch
+
+torch.cuda.manual_seed(3)
+torch.manual_seed(3)
+
+import data_handler, tracking_nn
 import sys
 from torch.optim import Adam
-
-torch.cuda.manual_seed(1)
-torch.manual_seed(1)
 
 flag = int(sys.argv[1])
 data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a","/home/danai/Desktop/GaitTracking/p17/2.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 #data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 path = "/home/athdom/GaitTracking/"
-batch_size = 128
+batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
     cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
     for param in cnn.parameters():
         param.requires_grad = False
-rnn = tracking_nn.TCN(batch_size).to(device)
+rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader()
 print("Loading dataset...")
@@ -31,7 +32,7 @@ print(len(train_set_x), len(val_set_x))
 
 epochs = 1000
 patience = 1
-learning_rate = 0.001
+learning_rate = 0.0001
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -63,11 +64,11 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 25:
+    if epoch == 10:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
-        #model.init_hidden()
+        model.init_hidden()
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
         optimizer.zero_grad()
         outputs = model.forward(inputs)
@@ -84,7 +85,7 @@ for epoch in range(epochs):
             dist = 0
             m = 0
             for i, j in zip(val_set_x, val_set_y):
-                #model.init_hidden()
+                model.init_hidden()
                 input = i.to(device)
                 label = j.to(device)
                 output = model.forward(input)
