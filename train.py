@@ -11,10 +11,11 @@ flag = int(sys.argv[1])
 data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a","/home/danai/Desktop/GaitTracking/p17/2.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
 #data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
-#data_paths=["/home/shit/Desktop/GaitTracking/p1/2.a","/home/shit/Desktop/GaitTracking/p5/2.a", "/home/shit/Desktop/GaitTracking/p11/2.a", "/home/shit/Desktop/GaitTracking/p11/3.a", "/home/shit/Desktop/GaitTracking/p16/3.a", "/home/shit/Desktop/GaitTracking/p17/3.a", "/home/shit/Desktop/GaitTracking/p18/2.a", "/home/shit/Desktop/GaitTracking/p18/3.a"]
+data_paths=["/home/iral-lab/GaitTracking/p1/2.a", "/home/iral-lab/GaitTracking/p5/2.a", "/home/iral-lab/GaitTracking/p11/2.a", "/home/iral-lab/GaitTracking/p11/3.a", "/home/iral-lab/GaitTracking/p16/3.a", "/home/iral-lab/GaitTracking/p17/2.a", "/home/iral-lab/GaitTracking/p17/3.a", "/home/iral-lab/GaitTracking/p18/2.a", "/home/iral-lab/GaitTracking/p18/3.a"]
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 path = "/home/athdom/GaitTracking/"
+#path = "/home/iral-lab/GaitTracking/"
 batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
