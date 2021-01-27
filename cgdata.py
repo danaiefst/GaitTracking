@@ -31,7 +31,7 @@ class leg:
         self.y = self.offsety + self.ampy * np.sin(self.thetay / delayy)
 
     def move(self):
-        self.thetax += self.dt * accel
+        self.thetax += (self.dt + (np.random.random() - 0.5) * 0.5 * self.dt) * accel
         self.thetay += self.dt * accel
         self.x = self.offsetx + self.ampx * np.sin(self.thetax / self.delayx)
         self.y = self.offsety + self.ampy * np.sin(self.thetay / self.delayy)
@@ -39,7 +39,7 @@ class leg:
 
 class walk:
 
-    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=1, minbema=0.2, dt=1/40):
+    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40):
         self.direction = direction
         self.maxinterdist = maxinterdist
         self.mininterdist = mininterdist
@@ -58,8 +58,9 @@ class walk:
             self.centeroffsety += (np.random.random() - 0.5) * 0.2
             self.centeroffsetx += (np.random.random() - 0.5) * 0.01
             bema = np.random.random() * (min(maxbema, max(MAXY - self.centeroffsety, self.centeroffsety - MINY)) - minbema) + minbema
-            self.rleg = leg(rradius, self.centeroffsetx - self.interdist / 2, self.centeroffsety, bema/40, bema/2, 0, 0, 2, 1, dt)
-            self.lleg = leg(lradius, self.centeroffsetx + self.interdist / 2, self.centeroffsety, bema/40, bema/2, 0, np.pi, 2, 1, dt)
+            bemax = (np.random.random() - 0.5) * bema / 5
+            self.rleg = leg(rradius, self.centeroffsetx - self.interdist / 2, self.centeroffsety, bemax, bema/2, 0, 0, np.random.random() * 2 + 1, 1, dt)
+            self.lleg = leg(lradius, self.centeroffsetx + self.interdist / 2, self.centeroffsety, bemax, bema/2, 0, np.pi, np.random.random() + 1, 1, dt)
         else:
             self.rleg = rleg
             self.lleg = lleg
@@ -75,7 +76,10 @@ class walk:
     def move(self):
         self.statetimer += 1
         if self.stateend == self.statetimer:
-            self.state = np.random.randint(0, 2)
+            if np.random.random() < 0.8:
+                self.state = 1
+            else:
+                self.state = 0
             self.statetimer = 0
             self.stateend = np.random.randint(50, 200)
             self.angle = 0
@@ -84,16 +88,19 @@ class walk:
                 xM, xm = self.lleg.ampx + self.lleg.offsetx + self.lleg.radius, -self.rleg.ampx + self.rleg.offsetx - self.rleg.radius
                 yMl, yml = self.lleg.ampy + self.lleg.offsety + self.lleg.radius, -self.lleg.ampy + self.lleg.offsety - self.lleg.radius
                 yMr, ymr = self.rleg.ampy + self.rleg.offsety + self.rleg.radius, -self.rleg.ampy + self.rleg.offsety - self.rleg.radius
-                maxangle = min(np.pi / 2 + np.arctan(np.sqrt(xm ** 2 + yMr ** 2 - MINX ** 2) / MINX), np.pi / 2 + np.arctan(MINY / -np.sqrt(xM ** 2 + ymr ** 2 - MINY ** 2)))
-                minangle = max(np.arctan(np.sqrt(xM ** 2 + yMl ** 2 - MAXX ** 2) / MAXX) - np.pi / 2, np.arctan(MINY / np.sqrt(xM ** 2 + yml ** 2 - MINY ** 2)) - np.pi / 2)
+                #legacy rotation
+                #maxangle = min(np.pi / 2 + np.arctan(np.sqrt(xm ** 2 + yMr ** 2 - MINX ** 2) / MINX), np.pi / 2 + np.arctan(MINY / -np.sqrt(xM ** 2 + ymr ** 2 - MINY ** 2)))
+                #minangle = max(np.arctan(np.sqrt(xM ** 2 + yMl ** 2 - MAXX ** 2) / MAXX) - np.pi / 2, np.arctan(MINY / np.sqrt(xM ** 2 + yml ** 2 - MINY ** 2)) - np.pi / 2)
+                maxangle = np.pi/4
+                minangle = -np.pi/4
                 self.angle = np.random.random() * (maxangle - minangle) + minangle
         self.direction += (self.angle - self.startangle) / self.stateend
         self.rleg.move()
         self.lleg.move()
 
-    @staticmethod
-    def _rotate(x, y, theta):
-        return (x * np.cos(theta) - y * np.sin(theta), y * np.cos(theta) + x * np.sin(theta))
+    def _rotate(self, x, y, theta):
+        x0, y0 = self.centeroffsetx, self.centeroffsety
+        return ((x - x0) * np.cos(theta) - (y - y0) * np.sin(theta) + x0, (y - y0) * np.cos(theta) + (x - x0) * np.sin(theta) + y0)
     
     def _coords(self):
         """Returns the coords of the two legs as tuples. Return value of the form ((rlegx, rlegy), (llegx, llegy))"""
@@ -125,7 +132,7 @@ class walk:
             x.append(a[i] * yp)
         return np.array(x), np.array(y)
 
-    def coords(self, offset=0.04):
+    def coords(self, offset=0.06):
         (x1, y1), (x2, y2) = self._coords()
         u = np.arctan2(y1, x1)
         x1 -= offset * np.cos(u)
@@ -137,7 +144,7 @@ class walk:
 
 data_path = "/home/danai/Desktop/GaitTracking/cgdata"
 N = 1000
-vision = 0.7
+vision = 0.6
 W = walk()
 #plt.ion()
 #fig, ax = plt.subplots()
@@ -148,7 +155,7 @@ W = walk()
 #l, = ax.plot([0], [0], 'o')
 #laser, = ax.plot([0], [0], 'o', markersize=1)
 c = -1
-for accel in [2, 3, 4, 5]:
+for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
     c += 1
     for i in range(1000):
         rd, ld = W.coords()
@@ -165,7 +172,11 @@ for accel in [2, 3, 4, 5]:
         valid = np.where(ly != np.inf)
         y = (lx[valid] - MINX) / (MAXX - MINX) * img_side
         x = img_side - (ly[valid] - MINY) / (MAXY - MINY) * img_side
-        img[x.astype(int), y.astype(int)] = 1
+        y = y.astype(int)
+        x = x.astype(int)
+        y[np.where(y == img_side)] = img_side - 1
+        x[np.where(x == img_side)] = img_side - 1
+        img[x, y] = 1
         torch.save(img, "{}/data/{}.pt".format(data_path, c))
         y1 = (rd[0] - MINX) / (MAXX - MINX)
         x1 = 1 - (rd[1] - MINY) / (MAXY - MINY)
