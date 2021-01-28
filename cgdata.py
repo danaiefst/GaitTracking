@@ -4,6 +4,8 @@ from time import sleep
 import torch
 import os
 
+np.random.seed(0)
+
 MAXX = 0.5
 MINX = -0.5
 MAXY = 1.2
@@ -101,7 +103,7 @@ class walk:
     def _rotate(self, x, y, theta):
         x0, y0 = self.centeroffsetx, self.centeroffsety
         return ((x - x0) * np.cos(theta) - (y - y0) * np.sin(theta) + x0, (y - y0) * np.cos(theta) + (x - x0) * np.sin(theta) + y0)
-    
+
     def _coords(self):
         """Returns the coords of the two legs as tuples. Return value of the form ((rlegx, rlegy), (llegx, llegy))"""
         return (self._rotate(self.rleg.x, self.rleg.y, self.direction), self._rotate(self.lleg.x, self.lleg.y, self.direction))
@@ -142,10 +144,9 @@ class walk:
         y2 -= offset * np.sin(u)
         return (x1, y1), (x2, y2)
 
-data_path = "/home/danai/Desktop/GaitTracking/cgdata"
+data_path = "/gpu-data/athdom/cgdata"
 N = 1000
 vision = 0.6
-W = walk()
 #plt.ion()
 #fig, ax = plt.subplots()
 
@@ -156,32 +157,34 @@ W = walk()
 #laser, = ax.plot([0], [0], 'o', markersize=1)
 c = -1
 for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
-    c += 1
-    for i in range(1000):
-        rd, ld = W.coords()
-        #r.set_data([rd[0]], [rd[1]])
-        #l.set_data([ld[0]], [ld[1]])
-        lx, ly = W.laser_points(vision_ratio = vision, noise = 0.002)
-        #laser.set_data(lx, ly)
-        #fig.canvas.draw()
-        #fig.canvas.flush_events()
-        #sleep(1/40)
-        W.move()
-
-        img = torch.zeros((img_side, img_side), dtype=torch.double)
-        valid = np.where(ly != np.inf)
-        y = (lx[valid] - MINX) / (MAXX - MINX) * img_side
-        x = img_side - (ly[valid] - MINY) / (MAXY - MINY) * img_side
-        y = y.astype(int)
-        x = x.astype(int)
-        y[np.where(y == img_side)] = img_side - 1
-        x[np.where(x == img_side)] = img_side - 1
-        img[x, y] = 1
-        torch.save(img, "{}/data/{}.pt".format(data_path, c))
-        y1 = (rd[0] - MINX) / (MAXX - MINX)
-        x1 = 1 - (rd[1] - MINY) / (MAXY - MINY)
-        y2 = (ld[0] - MINX) / (MAXX - MINX)
-        x2 = 1 - (ld[1] - MINY) / (MAXY - MINY)
-        torch.save(torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double), "{}/labels/{}.pt".format(data_path, c))
+    for j in range(4):
         c += 1
+        W = walk()
+        for i in range(N):
+            rd, ld = W.coords()
+            #r.set_data([rd[0]], [rd[1]])
+            #l.set_data([ld[0]], [ld[1]])
+            lx, ly = W.laser_points(vision_ratio = vision, noise = 0.002)
+            #laser.set_data(lx, ly)
+            #fig.canvas.draw()
+            #fig.canvas.flush_events()
+            #sleep(1/40)
+            W.move()
+
+            img = torch.zeros((img_side, img_side), dtype=torch.double)
+            valid = np.where(ly != np.inf)
+            y = (lx[valid] - MINX) / (MAXX - MINX) * img_side
+            x = img_side - (ly[valid] - MINY) / (MAXY - MINY) * img_side
+            y = y.astype(int)
+            x = x.astype(int)
+            y[np.where(y == img_side)] = img_side - 1
+            x[np.where(x == img_side)] = img_side - 1
+            img[x, y] = 1
+            torch.save(img, "{}/data/{}.pt".format(data_path, c))
+            y1 = (rd[0] - MINX) / (MAXX - MINX)
+            x1 = 1 - (rd[1] - MINY) / (MAXY - MINY)
+            y2 = (ld[0] - MINX) / (MAXX - MINX)
+            x2 = 1 - (ld[1] - MINY) / (MAXY - MINY)
+            torch.save(torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double), "{}/labels/{}.pt".format(data_path, c))
+            c += 1
 

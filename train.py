@@ -12,10 +12,10 @@ flag = int(sys.argv[1])
 #data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
 #data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
 data_paths=["/home/iral-lab/GaitTracking/p1/2.a", "/home/iral-lab/GaitTracking/p5/2.a", "/home/iral-lab/GaitTracking/p11/2.a", "/home/iral-lab/GaitTracking/p11/3.a", "/home/iral-lab/GaitTracking/p16/3.a", "/home/iral-lab/GaitTracking/p17/2.a", "/home/iral-lab/GaitTracking/p17/3.a", "/home/iral-lab/GaitTracking/p18/2.a", "/home/iral-lab/GaitTracking/p18/3.a"]
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-#path = "/home/athdom/GaitTracking/"
-path = "/home/iral-lab/GaitTracking/"
+path = "/home/athdom/GaitTracking/"
+#path = "/home/iral-lab/GaitTracking/"
 batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
@@ -25,7 +25,7 @@ if flag:
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(data_paths = data_paths)
+data = data_handler.LegDataLoader()
 print("Loading dataset...")
 train_set_x, train_set_y, val_set_x, val_set_y, test_set_x, test_set_y = data.load(batch_size)
 print(len(train_set_x), len(val_set_x))
@@ -65,9 +65,9 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 30:
-        learning_rate *= 0.1
-        optimizer = Adam(model.parameters(), lr = learning_rate)
+    #if epoch == 6 or epoch == 25:
+    #    learning_rate *= 0.1
+    #    optimizer = Adam(model.parameters(), lr = learning_rate)
     for i in range(len(train_set_x)):
         model.init_hidden()
         inputs, labels = train_set_x[i].to(device), train_set_y[i].to(device)
