@@ -133,6 +133,9 @@ class RNN(Module):
     def init_hidden(self, device):
         self.h = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
 
+    def detach_hidden(self):
+        self.h = (self.h[0].detach(), self.h[1].detach())
+        
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
@@ -149,6 +152,9 @@ class Net(Module):
     def init_hidden(self):
         self.rnn.init_hidden(self.device)
 
+    def detach_hidden(self):
+        self.rnn.detach_hidden()
+        
     def __init__(self, device, cnn, rnn):
         super(Net, self).__init__()
         self.cnn = cnn
@@ -197,4 +203,5 @@ class Net(Module):
         #Association loss
         assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
         #print(detect_loss * 5, assoc_loss/150)
-        return prob_loss + 2 * detect_loss + assoc_loss / 100
+        #return prob_loss + 2 * detect_loss + assoc_loss / 10
+        return prob_loss + 5 * detect_loss
