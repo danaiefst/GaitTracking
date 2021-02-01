@@ -8,10 +8,12 @@ import sys
 from torch.optim import Adam
 
 flag = int(sys.argv[1])
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-path = "/home/athdom/GaitTracking/"
+#path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
+path = "/home/danai/Desktop/GaitTracking/"
+data_path = path + "data/" 
 batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
@@ -21,7 +23,7 @@ if flag:
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(batch_size = batch_size)
+data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path)
 # Train the nn
 
 epochs = 1000

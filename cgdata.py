@@ -4,8 +4,6 @@ from time import sleep
 import torch
 import os
 
-np.random.seed(0)
-
 MAXX = 0.5
 MINX = -0.5
 MAXY = 1.2
@@ -41,7 +39,10 @@ class leg:
 
 class walk:
 
-    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40):
+    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40, state_ratio=2/3):
+        """
+        state_ratio : swing dist / stance dist
+        """
         self.direction = direction
         self.maxinterdist = maxinterdist
         self.mininterdist = mininterdist
@@ -74,6 +75,7 @@ class walk:
         self.startangle = 0
         self.angle = 0
         self.stateend = np.random.randint(50, 200)
+        self.state_theta = np.arcsin(state_ratio / (1 + state_ratio))
 
     def move(self):
         self.statetimer += 1
@@ -103,7 +105,7 @@ class walk:
     def _rotate(self, x, y, theta):
         x0, y0 = self.centeroffsetx, self.centeroffsety
         return ((x - x0) * np.cos(theta) - (y - y0) * np.sin(theta) + x0, (y - y0) * np.cos(theta) + (x - x0) * np.sin(theta) + y0)
-
+    
     def _coords(self):
         """Returns the coords of the two legs as tuples. Return value of the form ((rlegx, rlegy), (llegx, llegy))"""
         return (self._rotate(self.rleg.x, self.rleg.y, self.direction), self._rotate(self.lleg.x, self.lleg.y, self.direction))
@@ -130,6 +132,8 @@ class walk:
             if D2[i] >= 0:
                 if (abs(x2 - a[i] * y2) / np.sqrt(a[i] ** 2 + 1)) / self.lleg.radius < vision_ratio:
                     yp = min(yp, (-B2[i] - np.sqrt(D2[i])) / 2 / A2[i]) + np.random.normal(scale=noise) * np.sin(theta[i])
+            if yp == np.inf or yp == -np.inf:
+                yp = 0
             y.append(yp)
             x.append(a[i] * yp)
         return np.array(x), np.array(y)
@@ -144,21 +148,30 @@ class walk:
         y2 -= offset * np.sin(u)
         return (x1, y1), (x2, y2)
 
-data_path = "/gpu-data/athdom/cgdata"
+    def gait_state(self):
+        """
+        Returns the state of the gait as an index:
+        0: RS (right stance)
+        1: RDS (right double support (right leg in front of left leg))
+        2: LS
+        3: LDS
+        """
+        theta = (self.rleg.thetay / accel) % (2 * np.pi)
+        for i, e in enumerate([self.state_theta, np.pi - self.state_theta, np.pi + self.state_theta, 2 * np.pi - self.state_theta, 2 * np.pi]):
+            if theta < e:
+                return i % 4
+
+data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
+os.chdir(data_path)
 N = 1000
 vision = 0.6
-#plt.ion()
-#fig, ax = plt.subplots()
-
-#plt.xlim(MINX, MAXX)
-#plt.ylim(MINY, MAXY)
-#r, = ax.plot([0], [0], 'o')
-#l, = ax.plot([0], [0], 'o')
-#laser, = ax.plot([0], [0], 'o', markersize=1)
-c = -1
+c = 0
+valid = open("valid.txt", "w")
+laser = np.zeros((13 * 4 * N, 1400))
+centers = np.zeros((13 * 4 * N, 4))
 for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
     for j in range(4):
-        c += 1
+        print("{} {}".format(c, c + 999), file=valid)
         W = walk()
         for i in range(N):
             rd, ld = W.coords()
@@ -170,21 +183,8 @@ for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
             #fig.canvas.flush_events()
             #sleep(1/40)
             W.move()
-
-            img = torch.zeros((img_side, img_side), dtype=torch.double)
-            valid = np.where(ly != np.inf)
-            y = (lx[valid] - MINX) / (MAXX - MINX) * img_side
-            x = img_side - (ly[valid] - MINY) / (MAXY - MINY) * img_side
-            y = y.astype(int)
-            x = x.astype(int)
-            y[np.where(y == img_side)] = img_side - 1
-            x[np.where(x == img_side)] = img_side - 1
-            img[x, y] = 1
-            torch.save(img, "{}/data/{}.pt".format(data_path, c))
-            y1 = (rd[0] - MINX) / (MAXX - MINX)
-            x1 = 1 - (rd[1] - MINY) / (MAXY - MINY)
-            y2 = (ld[0] - MINX) / (MAXX - MINX)
-            x2 = 1 - (ld[1] - MINY) / (MAXY - MINY)
-            torch.save(torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double), "{}/labels/{}.pt".format(data_path, c))
+            laser[c] = np.stack([lx, ly]).T.reshape(-1)
+            centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1] 
             c += 1
-
+np.savetxt("laserpoints.csv".format(c), laser, delimiter=",")
+np.savetxt("centers.csv".format(c), centers, delimiter=",")

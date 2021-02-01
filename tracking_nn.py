@@ -162,8 +162,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        #return self.cnn(x)
-        return self.rnn(self.cnn(x))
+        return self.cnn(x)
+        #return self.rnn(self.cnn(x))
 
     def loss1(self, yh, y):
         #Probability loss

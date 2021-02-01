@@ -35,6 +35,7 @@ def shifti(img, x, y):
 
 def print_data(img, labels, fast=0):
     image = img.detach().clone()
+    labels = labels / 7 * 112
     x1, y1, x2, y2 = int(labels[0, 0]), int(labels[0, 1]), int(labels[1, 0]), int(labels[1, 1])
     image[x1, y1] = 0.2
     image[x2, y2] = 0.8
@@ -74,7 +75,7 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "cgdata", "p18/2.a", "18/3.a"]):
+    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"]):
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
@@ -95,9 +96,26 @@ class LegDataLoader():
                     i += 1
                 self.train_data.append(subvideo)
 
+        #CG data set
+        self.cg_data = []
+        os.chdir(data_path + "cgdata")
+        valid = open("valid.txt", "r")
+        laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
+        centers = np.genfromtxt("centers.csv", delimiter = ",")
+        for line in valid:
+            start, end = line.strip().split(" ")
+            i = int(start)
+            end = int(end)
+            subvideo = []
+            while i <= end:
+                subvideo.append((laser[i], centers[i]))
+                i += 1
+            self.cg_data.append(subvideo)
+
+                
         #Val set
         self.val_data = []
-        os.chdir(path + paths[-2])
+        os.chdir(data_path + paths[-2])
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -113,7 +131,7 @@ class LegDataLoader():
 
         #Test set
         self.test_data = []
-        os.chdir(path + paths[-1])
+        os.chdir(data_path + paths[-1])
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -132,15 +150,19 @@ class LegDataLoader():
         self.phase = 0
 
     def load(self, set):
+        print(self.phase, self.i, self.j)
         #Set is 0 for test set,
         if set == 0:
-            data = self.train_data
+            if self.phase == 8:
+                data = self.cg_data
+            else:
+                data = self.train_data
         elif set == 1:
             data = self.val_data
-            self.phase = 8
+            self.phase = 9
         else:
             data = self.test_data
-            self.phase = 8
+            self.phase = 9
         flag = 0
         batchd = []
         batchl = []
@@ -148,8 +170,10 @@ class LegDataLoader():
             img = torch.zeros((img_side, img_side), dtype=torch.double)
             laser = data[self.i][self.j][0]
             laser_spots = laser.reshape((int(laser.shape[0] / 2), 2))
-            y = (laser_spots[:, 0] - min_width) / (max_width - min_width) * img_side
-            x = img_side - (laser_spots[:, 1] - min_height) / (max_height - min_height) * img_side
+            v = laser_spots[:, 1] >= 0.2
+            y = (laser_spots[:, 0][v] - min_width) / (max_width - min_width) * img_side
+            x = img_side - (laser_spots[:, 1][v] - min_height) / (max_height - min_height) * img_side
+            
             img[x.astype(int), y.astype(int)] = 1
 
             center = data[self.i][self.j][1]
@@ -159,7 +183,7 @@ class LegDataLoader():
             x2 = 1 - (center[3] - min_height) / (max_height - min_height)
             tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
 
-            if self.phase == 0 or self.phase == 8:
+            if self.phase == 0 or self.phase > 7:
                 batchd.append(img)
                 batchl.append(tag * grid)
             elif self.phase == 1:
@@ -173,8 +197,11 @@ class LegDataLoader():
             if self.j == len(data[self.i]) - 1:
                 if self.i == len(data) - 1:
                     self.phase += 1
+                    if self.phase == 8:
+                        self.i = 0
+                        self.j = 0
                     #print(self.phase)
-                    if self.phase > 7:
+                    if self.phase > 8:
                         flag = -1
                         self.phase = 0
                     else:
