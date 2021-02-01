@@ -1,2 +1,0 @@
-5.8631 / 112 best loss with rnn dataset
-9.1 with cnn dataset

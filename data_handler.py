@@ -74,14 +74,14 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, batch_size = 32, grid = 7, data_paths=["/gpu-data/athdom/p1/2.a","/gpu-data/athdom/p5/2.a", "/gpu-data/athdom/p11/2.a", "/gpu-data/athdom/p11/3.a", "/gpu-data/athdom/p16/3.a", "/gpu-data/athdom/p17/2.a", "/gpu-data/athdom/p17/3.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]):
+    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "cgdata", "p18/2.a", "18/3.a"]):
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
         #Train set
-        for path in data_paths[:-2]:
+        for path in paths[:-2]:
             #print(path)
-            os.chdir(path)
+            os.chdir(data_path + path)
             valid = open("valid.txt", "r")
             laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
             centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -97,7 +97,7 @@ class LegDataLoader():
 
         #Val set
         self.val_data = []
-        os.chdir(data_paths[-2])
+        os.chdir(path + paths[-2])
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -113,7 +113,7 @@ class LegDataLoader():
 
         #Test set
         self.test_data = []
-        os.chdir(data_paths[-1])
+        os.chdir(path + paths[-1])
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")

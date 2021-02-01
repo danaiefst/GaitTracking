@@ -8,11 +8,6 @@ import sys
 from torch.optim import Adam
 
 flag = int(sys.argv[1])
-#data_paths=["/home/danai/Desktop/GaitTracking/p1/2.a","/home/danai/Desktop/GaitTracking/p5/2.a", "/home/danai/Desktop/GaitTracking/p11/2.a", "/home/danai/Desktop/GaitTracking/p11/3.a", "/home/danai/Desktop/GaitTracking/p16/3.a","/home/danai/Desktop/GaitTracking/p17/2.a", "/home/danai/Desktop/GaitTracking/p17/3.a", "/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-#data_paths = ["/gpu-data/athdom/p1/2.a", "/gpu-data/athdom/p18/2.a", "/gpu-data/athdom/p18/3.a"]
-#data_paths = ["/home/danai/Desktop/GaitTracking/p1/2.a"]
-#data_paths=["/home/iral-lab/GaitTracking/p1/2.a", "/home/iral-lab/GaitTracking/p5/2.a", "/home/iral-lab/GaitTracking/p11/2.a", "/home/iral-lab/GaitTracking/p11/3.a", "/home/iral-lab/GaitTracking/p16/3.a", "/home/iral-lab/GaitTracking/p17/2.a", "/home/iral-lab/GaitTracking/p17/3.a", "/home/iral-lab/GaitTracking/p18/2.a", "/home/iral-lab/GaitTracking/p18/3.a"]
-data_paths=["/home/athdom/GaitTracking/p1/2.a", "/home/athdom/GaitTracking/p5/2.a", "/home/athdom/GaitTracking/p11/2.a", "/home/athdom/GaitTracking/p11/3.a", "/home/athdom/GaitTracking/p16/3.a", "/home/athdom/GaitTracking/p17/2.a", "/home/athdom/GaitTracking/p17/3.a", "/home/athdom/GaitTracking/p18/2.a", "/home/athdom/GaitTracking/p18/3.a"]
 device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 path = "/home/athdom/GaitTracking/"
@@ -26,7 +21,7 @@ if flag:
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(batch_size = batch_size, data_paths = data_paths)
+data = data_handler.LegDataLoader(batch_size = batch_size)
 # Train the nn
 
 epochs = 1000
