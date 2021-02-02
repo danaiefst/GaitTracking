@@ -162,24 +162,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        return self.cnn(x)
-        #return self.rnn(self.cnn(x))
-
-    def loss1(self, yh, y):
-        #Probability loss
-        probh = yh[:, [0, 3], :, :]
-        prob = torch.zeros(y.shape[0], 2, grid, grid).to(self.device)
-        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
-        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((prob - probh) ** 2 * ((1 - prob) * 0.5 + prob)).sum()
-
-        #Detection loss
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, y[:, 0, 0].long(), y[:, 0, 1].long()]
-        llegh = yh[torch.arange(yh.shape[0]), 4:, y[:, 1, 0].long(), y[:, 1, 1].long()]
-
-        detect_loss = 5 * (((rlegh - y[:, 0] % 1) ** 2).sum() + ((llegh - y[:, 1] % 1) ** 2).sum())
-
-        return prob_loss + detect_loss
+        #return self.cnn(x)
+        return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
         #Probability loss

@@ -10,9 +10,9 @@ from torch.optim import Adam
 flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-#path = "/home/athdom/GaitTracking/"
+path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
-path = "/home/danai/Desktop/GaitTracking/"
+#path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
 
@@ -60,7 +60,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch % 10 == 0:
+    if epoch == 15 or epoch == 30:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)

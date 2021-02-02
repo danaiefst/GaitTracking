@@ -4,6 +4,8 @@ from time import sleep
 import torch
 import os
 
+np.random.seed(0)
+
 MAXX = 0.5
 MINX = -0.5
 MAXY = 1.2
@@ -161,7 +163,7 @@ class walk:
             if theta < e:
                 return i % 4
 
-data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
+data_path = "/home/athdom/GaitTracking/data/cgdata"
 os.chdir(data_path)
 N = 1000
 vision = 0.6

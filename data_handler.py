@@ -150,7 +150,7 @@ class LegDataLoader():
         self.phase = 0
 
     def load(self, set):
-        print(self.phase, self.i, self.j)
+        #print(self.phase, self.i, self.j)
         #Set is 0 for test set,
         if set == 0:
             if self.phase == 8:
