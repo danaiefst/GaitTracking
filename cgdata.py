@@ -41,10 +41,7 @@ class leg:
 
 class walk:
 
-    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40, state_ratio=2/3):
-        """
-        state_ratio : swing dist / stance dist
-        """
+    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40):
         self.direction = direction
         self.maxinterdist = maxinterdist
         self.mininterdist = mininterdist
@@ -77,7 +74,6 @@ class walk:
         self.startangle = 0
         self.angle = 0
         self.stateend = np.random.randint(50, 200)
-        self.state_theta = np.arcsin(state_ratio / (1 + state_ratio))
 
     def move(self):
         self.statetimer += 1
@@ -153,16 +149,25 @@ class walk:
     def gait_state(self):
         """
         Returns the state of the gait as an index:
-        0: RS (right stance)
-        1: RDS (right double support (right leg in front of left leg))
-        2: LS
+        1: RDS (left double support (left leg in front of right leg))
+        2: RS
         3: LDS
+        4: LS
         """
-        theta = (self.rleg.thetay / accel) % (2 * np.pi)
-        for i, e in enumerate([self.state_theta, np.pi - self.state_theta, np.pi + self.state_theta, 2 * np.pi - self.state_theta, 2 * np.pi]):
+        theta = ((self.rleg.thetay + np.pi / 2) % (2 * np.pi)) / (2 * np.pi)
+        for i, e in enumerate([0.15, 0.45, 0.6, 1]):
             if theta < e:
-                return i % 4
+                return (i + 2) % 4 + 1
+        
 
+#plt.ion()
+#fig, ax = plt.subplots()
+
+#plt.xlim(MINX, MAXX)
+#plt.ylim(MINY, MAXY)
+#r, = ax.plot([0], [0], 'o')
+#l, = ax.plot([0], [0], 'o')
+#ls, = ax.plot([0], [0], 'o', markersize=1)
 data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
 os.chdir(data_path)
 N = 1000
@@ -171,6 +176,7 @@ c = 0
 valid = open("valid.txt", "w")
 laser = np.zeros((13 * 4 * N, 1400))
 centers = np.zeros((13 * 4 * N, 4))
+gait_states = np.zeros((13 * 4 * N))
 for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
     for j in range(4):
         print("{} {}".format(c, c + 999), file=valid)
@@ -180,13 +186,17 @@ for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
             #r.set_data([rd[0]], [rd[1]])
             #l.set_data([ld[0]], [ld[1]])
             lx, ly = W.laser_points(vision_ratio = vision, noise = 0.002)
-            #laser.set_data(lx, ly)
+            #ls.set_data(lx, ly)
             #fig.canvas.draw()
             #fig.canvas.flush_events()
-            #sleep(1/40)
+            #sleep(1)
             W.move()
             laser[c] = np.stack([lx, ly]).T.reshape(-1)
-            centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1] 
+            centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1]
+            gait_states[c] = W.gait_state()
+            #print(gait_states[c])
             c += 1
-np.savetxt("laserpoints.csv".format(c), laser, delimiter=",")
-np.savetxt("centers.csv".format(c), centers, delimiter=",")
+ 
+np.savetxt("laserpoints.csv", laser, delimiter=",")
+np.savetxt("centers.csv", centers, delimiter=",")
+np.savetxt("gait_states.csv", gait_states, delimiter=",")
