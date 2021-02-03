@@ -72,28 +72,31 @@ def median(l):
         return l[len(l) // 2]
 
 
-data_paths=["/home/danai/Desktop/GaitTracking/p18/2.a", "/home/danai/Desktop/GaitTracking/p18/3.a"]
-data = data_handler.LegDataLoader(data_paths = data_paths)
+data_path = "/home/danai/Desktop/GaitTracking/data/"
+paths=["p18/2.a", "p18/3.a"]
+data = data_handler.LegDataLoader(data_path = data_path, paths = paths)
 print("Loading dataset...")
-tx, ty, vx, vy, tsx, tsy = data.load(32)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 cnn = tracking_nn.CNN().to(device)
 rnn = tracking_nn.RNN().to(device)
 net = tracking_nn.Net(device, cnn, rnn).to(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/best_model.pt", map_location=device))
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model1.pt", map_location=device))
 all_dists = []
-for i in range(len(tsx)):
-    with torch.no_grad():
-        net.init_hidden()
-        batch = tsx[i].to(device)
-        #print("Calculating validation batch", i)
-        t = time.time()
-        out = net(batch)
-        #print("Time taken:", time.time() - t)
-        all_dists.extend(eucl_dist(out, tsy[i].to(device)))
-        check_out(batch.to(torch.device("cpu")), out.to(torch.device("cpu")), tsy[i].to(torch.device("cpu")))
+f, input, label = data.load(1)
+net.init_hidden()
+with torch.no_grad():
+    while True:
+        if f:
+            net.init_hidden()
+        input, label = input.to(device), label.to(device)
+        out = net(input)
+        all_dists.extend(eucl_dist(out, label))
+        check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
+        if f == -1:
+            break
+        f, input, label = data.load(1)
 
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / grid, "Max dist:", max(all_dists) / grid, "Median dist:", median(all_dists) / grid)

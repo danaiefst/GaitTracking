@@ -163,7 +163,7 @@ class walk:
             if theta < e:
                 return i % 4
 
-data_path = "/home/athdom/GaitTracking/data/cgdata"
+data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
 os.chdir(data_path)
 N = 1000
 vision = 0.6
