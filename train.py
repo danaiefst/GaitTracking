@@ -37,19 +37,19 @@ if flag:
 else:
     save_path = path + "cnn_model.pt"
 
+def find_center(out):
+    p1_h = out[:, 0, :, :]
+    p2_h = out[:, 3, :, :]
+    detect_cell1 = p1_h.reshape(out.shape[0], -1).argmax(axis = 1)
+    detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
+    x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+    x2, y2 = detect_cell2 // grid, detect_cell2 % grid
+    return torch.stack([x1, y1, x2, y2], dim=1)
+
 def eucl_dist(out, labels):
-    ret = 0
-    m = 0
-    for i in range(out.shape[0]):
-        yh = out[i]
-        p1_h = yh[0, :, :]
-        p2_h = yh[3, :, :]
-        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
-        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
-        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
-        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-        d1 = (torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2)).item()
-        d2 = (torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2)).item()
+    for i in range(len(out)):
+        d1 = (torch.sqrt((x1 + out[i, 0] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 1] - labels[i, 0, 1]) ** 2)).item()
+        d2 = (torch.sqrt((x2 + out[i, 2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 3] - labels[i, 1, 1]) ** 2)).item()
         if d1 > m:
             m = d1
         if d2 > m:

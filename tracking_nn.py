@@ -7,81 +7,14 @@ torch.set_default_dtype(torch.double)
 #torch.cuda.manual_seed(1)
 grid = 7
 
-class Chomp1d(Module):
-    def __init__(self, chomp_size):
-        super(Chomp1d, self).__init__()
-        self.chomp_size = chomp_size
-
-    def forward(self, x):
-        return x[:, :, :-self.chomp_size].contiguous()
-
-
-class TemporalBlock(Module):
-    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
-        super(TemporalBlock, self).__init__()
-        self.conv1 = weight_norm(Conv1d(n_inputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
-        self.chomp1 = Chomp1d(padding)
-        self.relu1 = ReLU()
-        self.dropout1 = Dropout(dropout)
-
-        self.conv2 = weight_norm(Conv1d(n_outputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
-        self.chomp2 = Chomp1d(padding)
-        self.relu2 = ReLU()
-        self.dropout2 = Dropout(dropout)
-
-        self.net = Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
-                                 self.conv2, self.chomp2, self.relu2, self.dropout2)
-        self.downsample = Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
-        self.relu = ReLU()
-        self.init_weights()
-
-    def init_weights(self):
-        self.conv1.weight.data.normal_(0, 0.01)
-        self.conv2.weight.data.normal_(0, 0.01)
-        if self.downsample is not None:
-            self.downsample.weight.data.normal_(0, 0.01)
-
-    def forward(self, x):
-        out = self.net(x)
-        res = x if self.downsample is None else self.downsample(x)
-        return self.relu(out + res)
-
-
-class TemporalConvNet(Module):
-    def __init__(self, num_inputs, num_channels, kernel_size=2, dropout=0.2):
-        super(TemporalConvNet, self).__init__()
-        layers = []
-        num_levels = len(num_channels)
-        for i in range(num_levels):
-            dilation_size = 2 ** i
-            in_channels = num_inputs if i == 0 else num_channels[i-1]
-            out_channels = num_channels[i]
-            layers += [TemporalBlock(in_channels, out_channels, kernel_size, stride=1, dilation=dilation_size,
-                                     padding=(kernel_size-1) * dilation_size, dropout=dropout)]
-
-        self.network = Sequential(*layers)
-
-    def forward(self, x):
-        return self.network(x)
-
-class TCN(Module):
-    def __init__(self, batch_size):
-        super(TCN, self).__init__()
-        self.tcn = TemporalConvNet(batch_size, [batch_size] * 6, kernel_size=7)
-        self.batch_size = batch_size
-    def forward(self, x):
-        x = x.view(1, x.size(0), -1)
-        pad = 0
-        if x.size(1) < self.batch_size:
-            pad = self.batch_size - x.size(1)
-            first = x[0, 0].view(1, 1, -1)
-            extra = first.repeat(1, pad, 1)
-            x = torch.cat([extra, x], dim = 1)
-        x = self.tcn(x)
-        x = x.view(x.size(1), 6, grid, grid)[pad:]
-        return x
+def find_center(out):
+    p1_h = out[:, 0, :, :]
+    p2_h = out[:, 3, :, :]
+    detect_cell1 = p1_h.reshape(out.shape[0], -1).argmax(axis = 1)
+    detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
+    x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+    x2, y2 = detect_cell2 // grid, detect_cell2 % grid
+    return torch.stack([x1, y1, x2, y2], dim=1)
 
 class CNN(Module):
     def __init__(self):
@@ -127,11 +60,12 @@ class CNN(Module):
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         x = x.view(x.size(0), 6, grid, grid)
-        return x
+        y = find_center(x)
+        return y
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
+        self.h = (torch.zeros(self.num_of_layers, 1, 4).to(device), torch.zeros(self.num_of_layers, 1, 4).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
@@ -139,12 +73,12 @@ class RNN(Module):
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 4, hidden_size = 4, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 6, grid, grid))
+        x = x.view((x.size(1), 4))
         return x
 
 class Net(Module):
@@ -162,30 +96,11 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        #return self.cnn(x)
         return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
-        #Probability loss
-        probh = yh[:, [0, 3], :, :]
-        prob = torch.zeros(y.shape[0], 2, grid, grid).to(self.device)
-        prob[torch.arange(y.shape[0]), 0, y[:, 0, 0].long(), y[:, 0, 1].long()] = 1
-        prob[torch.arange(y.shape[0]), 1, y[:, 1, 0].long(), y[:, 1, 1].long()] = 1
-        prob_loss = ((prob - probh) ** 2).sum()
+        
+        detect_loss = ((yh - y.view(y.size(0), -1)) ** 2).sum()
 
-        #Detection loss
-        rposh = probh[:, 0, :, :].view(prob.shape[0], -1).argmax(axis=1)
-        rlegx, rlegy = (rposh // grid).to(self.device), (rposh % grid).to(self.device)
-        rlegh = yh[torch.arange(yh.shape[0]), 1:3, rlegx, rlegy]
-
-        lposh = probh[:, 1, :, :].view(prob.shape[0], -1).argmax(axis=1)
-        llegx, llegy = (lposh // grid).to(self.device), (lposh % grid).to(self.device)
-        llegh = yh[torch.arange(yh.shape[0]), 4:, llegx, llegy]
-
-        detect_loss = ((rlegh[:, 0] + rlegx.double() - y[:, 0, 0]) ** 2 + (rlegh[:, 1] + rlegy.double() - y[:, 0, 1]) ** 2 + (llegh[:, 0] + llegx.double() - y[:, 1, 0]) ** 2 + (llegh[:, 1] + llegy.double() - y[:, 1, 1]) ** 2).sum()
-
-        #Association loss
-        assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
-        #print(detect_loss * 5, assoc_loss/150)
-        return prob_loss + 2 * detect_loss + assoc_loss / 10
-        #return prob_loss + 5 * detect_loss
+        assoc_loss = ((yh[1:] - yh[:-1]) ** 2).sum()
+        return detect_loss + assoc_loss
