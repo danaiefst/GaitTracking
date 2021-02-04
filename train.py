@@ -10,9 +10,9 @@ from torch.optim import Adam
 flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-#path = "/home/athdom/GaitTracking/"
+path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
-path = "/home/danai/Desktop/GaitTracking/"
+#path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
 
@@ -53,14 +53,13 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    #if epoch == 15 or epoch == 20:
-    #    learning_rate *= 0.1
-    #    optimizer = Adam(model.parameters(), lr = learning_rate)
+    if epoch == 20:#epoch == 10:
+        learning_rate *= 0.1
+        optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
     model.init_hidden()
     c = 0
     while(True):
-        #print(f, input.shape[0])
         if f:
             model.init_hidden()
         input, label = input.to(device), label.to(device)
@@ -75,6 +74,7 @@ for epoch in range(epochs):
         if f == -1:
             break
         f, input, label = data.load(0)
+        #model.init_hidden()
         model.detach_hidden()
     print("epoch:{}, running loss: {}, #n: {}".format(epoch, running_loss / c, c))
     running_loss = 0
@@ -100,6 +100,7 @@ for epoch in range(epochs):
                 if f == -1:
                     break
                 f, input, label = data.load(1)
+                #model.init_hidden()
             if acc < best_acc:
                 best_acc = acc
                 print("Saving model with acc:", acc / c, ", mean dist:", dist / c / grid * 100, ", max dist:", m / grid * 100) #mean dist in cm

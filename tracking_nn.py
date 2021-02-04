@@ -14,7 +14,7 @@ def find_center(out):
     detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
     x1, y1 = detect_cell1 // grid, detect_cell1 % grid
     x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-    return torch.stack([x1 + out[torch.arange(p1_h.shape[0]), 1, x1, y1], y1 + out[torch.arange(p1_h.shape[0]), 2, x1, y1], x2 + out[torch.arange(p1_h.shape[0]), 1, x2, y2], y2 + out[torch.arange(p1_h.shape[0]), 2, x2, y2]], dim=1).double() / grid
+    return torch.stack([x1.double() + out[torch.arange(p1_h.shape[0]), 1, x1, y1], y1.double() + out[torch.arange(p1_h.shape[0]), 2, x1, y1], x2.double() + out[torch.arange(p1_h.shape[0]), 1, x2, y2], y2.double() + out[torch.arange(p1_h.shape[0]), 2, x2, y2]], dim=1) / grid
 
 class CNN(Module):
     def __init__(self):
@@ -65,7 +65,7 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.zeros(self.num_of_layers, 1, 4).to(device), torch.zeros(self.num_of_layers, 1, 4).to(device))
+        self.h = (torch.zeros(self.num_of_layers, 1, 304).to(device), torch.zeros(self.num_of_layers, 1, 304).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
@@ -73,13 +73,15 @@ class RNN(Module):
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 4, hidden_size = 4, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 304, hidden_size = 304, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
-        x = x.view(1, x.size(0), -1)
+        y = torch.zeros(x.size(0), 304).to(x.device)
+        y[:, -4:] = x
+        x = y.view(1, y.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 4))
-        return x * grid
+        x = x.view((x.size(1), 304))
+        return x[:, -4:]  * grid
 
 class Net(Module):
 
@@ -103,4 +105,4 @@ class Net(Module):
         detect_loss = ((yh - y.view(y.size(0), -1)) ** 2).sum()
 
         assoc_loss = ((yh[1:] - yh[:-1]) ** 2).sum()
-        return detect_loss# + assoc_loss / 10
+        return 5 * detect_loss + assoc_loss
