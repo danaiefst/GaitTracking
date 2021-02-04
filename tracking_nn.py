@@ -14,7 +14,7 @@ def find_center(out):
     detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
     x1, y1 = detect_cell1 // grid, detect_cell1 % grid
     x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-    return torch.stack([x1, y1, x2, y2], dim=1)
+    return torch.stack([x1 + out[torch.arange(p1_h.shape[0]), 1, x1, y1], y1 + out[torch.arange(p1_h.shape[0]), 2, x1, y1], x2 + out[torch.arange(p1_h.shape[0]), 1, x2, y2], y2 + out[torch.arange(p1_h.shape[0]), 2, x2, y2]], dim=1).double() / grid
 
 class CNN(Module):
     def __init__(self):
@@ -79,7 +79,7 @@ class RNN(Module):
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
         x = x.view((x.size(1), 4))
-        return x
+        return x * grid
 
 class Net(Module):
 
@@ -103,4 +103,4 @@ class Net(Module):
         detect_loss = ((yh - y.view(y.size(0), -1)) ** 2).sum()
 
         assoc_loss = ((yh[1:] - yh[:-1]) ** 2).sum()
-        return detect_loss + assoc_loss
+        return detect_loss# + assoc_loss / 10

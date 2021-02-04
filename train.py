@@ -10,9 +10,9 @@ from torch.optim import Adam
 flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-path = "/home/athdom/GaitTracking/"
+#path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
-#path = "/home/danai/Desktop/GaitTracking/"
+path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
 
@@ -27,7 +27,7 @@ data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path
 # Train the nn
 
 epochs = 1000
-patience = 1
+patience = 0
 learning_rate = 0.0001
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
@@ -37,19 +37,12 @@ if flag:
 else:
     save_path = path + "cnn_model.pt"
 
-def find_center(out):
-    p1_h = out[:, 0, :, :]
-    p2_h = out[:, 3, :, :]
-    detect_cell1 = p1_h.reshape(out.shape[0], -1).argmax(axis = 1)
-    detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
-    x1, y1 = detect_cell1 // grid, detect_cell1 % grid
-    x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-    return torch.stack([x1, y1, x2, y2], dim=1)
-
 def eucl_dist(out, labels):
+    m = 0
+    ret = 0
     for i in range(len(out)):
-        d1 = (torch.sqrt((x1 + out[i, 0] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 1] - labels[i, 0, 1]) ** 2)).item()
-        d2 = (torch.sqrt((x2 + out[i, 2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 3] - labels[i, 1, 1]) ** 2)).item()
+        d1 = (torch.sqrt((out[i, 0] - labels[i, 0, 0]) ** 2 + (out[i, 1] - labels[i, 0, 1]) ** 2)).item()
+        d2 = (torch.sqrt((out[i, 2] - labels[i, 1, 0]) ** 2 + (out[i, 3] - labels[i, 1, 1]) ** 2)).item()
         if d1 > m:
             m = d1
         if d2 > m:
@@ -60,9 +53,9 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 15 or epoch == 20:
-        learning_rate *= 0.1
-        optimizer = Adam(model.parameters(), lr = learning_rate)
+    #if epoch == 15 or epoch == 20:
+    #    learning_rate *= 0.1
+    #    optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
     model.init_hidden()
     c = 0
