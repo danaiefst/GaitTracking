@@ -8,13 +8,16 @@ torch.set_default_dtype(torch.double)
 grid = 7
 
 def find_center(out):
-    p1_h = out[:, 0, :, :]
-    p2_h = out[:, 3, :, :]
-    detect_cell1 = p1_h.reshape(out.shape[0], -1).argmax(axis = 1)
-    detect_cell2 = p2_h.reshape(out.shape[0], -1).argmax(axis = 1)
-    x1, y1 = detect_cell1 // grid, detect_cell1 % grid
-    x2, y2 = detect_cell2 // grid, detect_cell2 % grid
-    return torch.stack([x1.double() + out[torch.arange(p1_h.shape[0]), 1, x1, y1], y1.double() + out[torch.arange(p1_h.shape[0]), 2, x1, y1], x2.double() + out[torch.arange(p1_h.shape[0]), 1, x2, y2], y2.double() + out[torch.arange(p1_h.shape[0]), 2, x2, y2]], dim=1) / grid
+    probh = out[:, [0, 3], :, :]
+    rposh = probh[:, 0, :, :].view(probh.shape[0], -1).argmax(axis=1)
+    rlegx, rlegy = rposh // grid, rposh % grid
+    rlegh = out[torch.arange(out.shape[0]), 1:3, rlegx, rlegy]
+    
+    lposh = probh[:, 1, :, :].view(probh.shape[0], -1).argmax(axis=1)
+    llegx, llegy = lposh // grid, lposh % grid
+    llegh = out[torch.arange(out.shape[0]), 4:, llegx, llegy]
+
+    return torch.stack([rlegh[:, 0] + rlegx.double(), rlegh[:, 1] + rlegy.double(), llegh[:, 0] + llegx.double(), llegh[:, 1] + llegy.double()], dim=1) / grid
 
 class CNN(Module):
     def __init__(self):
@@ -60,12 +63,12 @@ class CNN(Module):
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         x = x.view(x.size(0), 6, grid, grid)
-        y = find_center(x)
-        return y
+        x = find_center(x)
+        return x
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.zeros(self.num_of_layers, 1, 304).to(device), torch.zeros(self.num_of_layers, 1, 304).to(device))
+        self.h = (torch.rand(self.num_of_layers, 1, 300).to(device), torch.rand(self.num_of_layers, 1, 300).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
@@ -73,15 +76,13 @@ class RNN(Module):
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 304, hidden_size = 304, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn_layers = LSTM(input_size = 4, hidden_size = 300, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
-        y = torch.zeros(x.size(0), 304).to(x.device)
-        y[:, -4:] = x
-        x = y.view(1, y.size(0), -1)
+        x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn_layers(x, self.h)
-        x = x.view((x.size(1), 304))
-        return x[:, -4:]  * grid
+        x = x.view((x.size(1), -1))
+        return x[:, :4] * grid
 
 class Net(Module):
 
@@ -101,8 +102,7 @@ class Net(Module):
         return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
-        
-        detect_loss = ((yh - y.view(y.size(0), -1)) ** 2).sum()
+        detect_loss = ((yh - y.view(y.size(0), -1)) ** 2).sum() 
 
         assoc_loss = ((yh[1:] - yh[:-1]) ** 2).sum()
-        return 5 * detect_loss + assoc_loss
+        return 5 * detect_loss# + assoc_loss

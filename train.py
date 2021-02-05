@@ -10,11 +10,11 @@ from torch.optim import Adam
 flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
-path = "/home/athdom/GaitTracking/"
+#path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
-#path = "/home/danai/Desktop/GaitTracking/"
+path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
-batch_size = 32
+batch_size = 100
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
@@ -28,7 +28,7 @@ data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path
 
 epochs = 1000
 patience = 0
-learning_rate = 0.0001
+learning_rate = 0.01
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -37,12 +37,34 @@ if flag:
 else:
     save_path = path + "cnn_model.pt"
 
-def eucl_dist(out, labels):
-    m = 0
+"""def eucl_dist(out, labels):
     ret = 0
-    for i in range(len(out)):
-        d1 = (torch.sqrt((out[i, 0] - labels[i, 0, 0]) ** 2 + (out[i, 1] - labels[i, 0, 1]) ** 2)).item()
-        d2 = (torch.sqrt((out[i, 2] - labels[i, 1, 0]) ** 2 + (out[i, 3] - labels[i, 1, 1]) ** 2)).item()
+    m = 0
+    for i in range(out.shape[0]):
+        yh = out[i]
+        p1_h = yh[0, :, :]
+        p2_h = yh[3, :, :]
+        detect_cell1 = p1_h.reshape(-1).argmax(axis = 0)
+        detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
+        x1, y1 = detect_cell1 // grid, detect_cell1 % grid
+        x2, y2 = detect_cell2 // grid, detect_cell2 % grid
+        d1 = (torch.sqrt((x1 + out[i, 1, x1, y1] - labels[i, 0, 0]) ** 2 + (y1 + out[i, 2, x1, y1] - labels[i, 0, 1]) ** 2)).item()
+        d2 = (torch.sqrt((x2 + out[i, 4, x2, y2] - labels[i, 1, 0]) ** 2 + (y2 + out[i, 5, x2, y2] - labels[i, 1, 1]) ** 2)).item()
+        if d1 > m:
+            m = d1
+        if d2 > m:
+            m = d2
+        ret += (d1 + d2) / 2
+    return m, ret / out.shape[0]"""
+
+def eucl_dist(out, labels):
+    ret = 0
+    m = 0
+    for i in range(out.shape[0]):
+        yh = out[i]
+        l = labels[i]
+        d1 = torch.sqrt((yh[0] - l[0, 0]) ** 2 + (yh[1] - l[0, 1]) ** 2).item()
+        d2 = torch.sqrt((yh[2] - l[1, 0]) ** 2 + (yh[3] - l[1, 1]) ** 2).item()
         if d1 > m:
             m = d1
         if d2 > m:
@@ -53,7 +75,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 20:#epoch == 10:
+    if epoch == 10 or epoch == 20:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
