@@ -28,7 +28,7 @@ data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path
 
 epochs = 1000
 patience = 0
-learning_rate = 0.01
+learning_rate = 0.0001
 grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
@@ -37,7 +37,7 @@ if flag:
 else:
     save_path = path + "cnn_model.pt"
 
-"""def eucl_dist(out, labels):
+def eucl_dist(out, labels):
     ret = 0
     m = 0
     for i in range(out.shape[0]):
@@ -55,27 +55,12 @@ else:
         if d2 > m:
             m = d2
         ret += (d1 + d2) / 2
-    return m, ret / out.shape[0]"""
-
-def eucl_dist(out, labels):
-    ret = 0
-    m = 0
-    for i in range(out.shape[0]):
-        yh = out[i]
-        l = labels[i]
-        d1 = torch.sqrt((yh[0] - l[0, 0]) ** 2 + (yh[1] - l[0, 1]) ** 2).item()
-        d2 = torch.sqrt((yh[2] - l[1, 0]) ** 2 + (yh[3] - l[1, 1]) ** 2).item()
-        if d1 > m:
-            m = d1
-        if d2 > m:
-            m = d2
-        ret += (d1 + d2) / 2
     return m, ret / out.shape[0]
 
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 10 or epoch == 20:
+    if epoch == 20 or epoch == 30:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
