@@ -82,9 +82,9 @@ rnn = tracking_nn.RNN().to(device)
 net = tracking_nn.Net(device, cnn, rnn).to(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
-net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model1.pt", map_location=device))
+net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
 all_dists = []
-f, input, label = data.load(2)
+f, input, label = data.load(1)
 net.init_hidden()
 with torch.no_grad():
     while True:
@@ -96,7 +96,7 @@ with torch.no_grad():
         check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
         if f == -1:
             break
-        f, input, label = data.load(2)
+        f, input, label = data.load(1)
 
 all_dists.sort()
 print("Mean dist:", sum(all_dists) / len(all_dists) / grid, "Max dist:", max(all_dists) / grid, "Median dist:", median(all_dists) / grid)

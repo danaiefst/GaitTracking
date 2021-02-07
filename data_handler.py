@@ -75,7 +75,7 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"]):
+    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"], gait = 0):
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
@@ -83,7 +83,11 @@ class LegDataLoader():
         for path in paths[:-2]:
             #print(path)
             os.chdir(data_path + path)
-            valid = open("valid.txt", "r")
+            if gait:
+                valid = open("gait_valid.txt", "r")
+                states = open("gait_states.txt", "r")
+            else:
+                valid = open("valid.txt", "r")
             laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
             centers = np.genfromtxt("centers.csv", delimiter = ",")
             for line in valid:
@@ -92,13 +96,18 @@ class LegDataLoader():
                 end = int(end)
                 subvideo = []
                 while i <= end:
-                    subvideo.append((laser[i], centers[i]))
+                    if gait:
+                        subvideo.append((laser[i], centers[i], states[i]))
+                    else:
+                        subvideo.append((laser[i], centers[i]))
                     i += 1
                 self.train_data.append(subvideo)
 
         #CG data set
         self.cg_data = []
         os.chdir(data_path + "cgdata")
+        if gait:
+            states = open("gait_states.txt", "r")
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -108,7 +117,10 @@ class LegDataLoader():
             end = int(end)
             subvideo = []
             while i <= end:
-                subvideo.append((laser[i], centers[i]))
+                if gait:
+                    subvideo.append((laser[i], centers[i], states[i]))
+                else:
+                    subvideo.append((laser[i], centers[i]))
                 i += 1
             self.cg_data.append(subvideo)
 
@@ -116,7 +128,11 @@ class LegDataLoader():
         #Val set
         self.val_data = []
         os.chdir(data_path + paths[-2])
-        valid = open("valid.txt", "r")
+        if gait:
+            valid = open("gait_valid.txt", "r")
+            states = open("gait_states.txt", "r")
+        else:
+            valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
         for line in valid:
@@ -125,14 +141,21 @@ class LegDataLoader():
             end = int(end)
             subvideo = []
             while i <= end:
-                subvideo.append((laser[i], centers[i]))
+                if gait:
+                    subvideo.append((laser[i], centers[i], states[i]))
+                else:
+                    subvideo.append((laser[i], centers[i]))
                 i += 1
             self.val_data.append(subvideo)
 
         #Test set
         self.test_data = []
         os.chdir(data_path + paths[-1])
-        valid = open("valid.txt", "r")
+        if gait:
+            valid = open("gait_valid.txt", "r")
+            states = open("gait_states.txt", "r")
+        else:
+            valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
         for line in valid:
@@ -141,7 +164,10 @@ class LegDataLoader():
             end = int(end)
             subvideo = []
             while i <= end:
-                subvideo.append((laser[i], centers[i]))
+                if gait:
+                    subvideo.append((laser[i], centers[i], states[i]))
+                else:
+                    subvideo.append((laser[i], centers[i]))
                 i += 1
             self.test_data.append(subvideo)
 
@@ -166,6 +192,8 @@ class LegDataLoader():
         flag = 0
         batchd = []
         batchl = []
+        if gait:
+            batchs = []
         for i in range(self.batch_size):
             img = torch.zeros((img_side, img_side), dtype=torch.double)
             laser = data[self.i][self.j][0]
@@ -183,6 +211,9 @@ class LegDataLoader():
             x2 = 1 - (center[3] - min_height) / (max_height - min_height)
             tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
 
+            if gait:
+                batchs.append(data[self.i][self.j][2] - 1)
+            
             if self.phase == 0 or self.phase > 7:
                 batchd.append(img)
                 batchl.append(tag * grid)
@@ -208,9 +239,15 @@ class LegDataLoader():
                         flag = 1
                     self.i = 0
                     self.j = 0
+                    if gait:
+                        return flag, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.double)
                     return flag, torch.stack(batchd), torch.stack(batchl)
                 self.j = 0
                 self.i += 1
+                if gait:
+                    return 1, torch.stack(batchd), torch,stack(batchl), torch.tensor(batchs, dtype=torch.double)
                 return 1, torch.stack(batchd), torch.stack(batchl)
             self.j += 1
+        if gait:
+            return 0, torch.stack(batchd), torch,stack(batchl), torch.tensor(batchs, dtype=torch.double)
         return 0, torch.stack(batchd), torch.stack(batchl)
