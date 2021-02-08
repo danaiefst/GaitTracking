@@ -93,7 +93,7 @@ with torch.no_grad():
         input, label = input.to(device), label.to(device)
         out = net(input)
         all_dists.extend(eucl_dist(out, label))
-        check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
+        #check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
         if f == -1:
             break
         f, input, label = data.load(2)
