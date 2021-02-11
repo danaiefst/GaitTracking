@@ -142,20 +142,19 @@ class GNet(Module):
         super(GNet, self).__init__()
         self.bi = 0
         self.num_layers = 1
-        self.input_size = 294
         self.hidden = 100
         self.linears = Sequential(
             Linear(self.hidden, 4),
             LeakyReLU(inplace=True))
 
-        self.rnn1 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
-        self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
-        self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
+        self.rnn1 = LSTM(input_size = 4, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
         self.l = CrossEntropyLoss()
         self.device = device
 
     def forward(self, x):
-        #x = find_center(x)
+        x = find_center(x)
         x = x.view(1, x.size(0), -1)
         x, self.h1 = self.rnn1(x, self.h1)
         #x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]

@@ -29,14 +29,14 @@ model.load_state_dict(torch.load(path + "model.pt", map_location = device))
 for param in model.parameters():
     param.requires_grad = False
 gnet = tracking_nn.GNet(device).to(device)
-data = data_handler.LegDataLoader(gait = 1, batch_size = batch_size, data_path = data_path)
+data = data_handler.LegDataLoader(gait = 1, batch_size = batch_size, data_path = data_path, paths = paths)
 # Train the nn
 
 epochs = 1000
 patience = 0
-learning_rate = 0.001
+learning_rate = 0.0001
 grid = 7
-optimizer = Adam(model.parameters(), lr = learning_rate)
+optimizer = Adam(gnet.parameters(), lr = learning_rate)
 best_loss = float("Inf")
 if flag == 1:
     save_path = path + "model.pt"
@@ -53,9 +53,9 @@ def accuracy(out, states):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    #if epoch == 15 or epoch == 30:
-    #    learning_rate *= 0.1
-    #    optimizer = Adam(model.parameters(), lr = learning_rate)
+    if epoch == 3 or epoch == 7 or epoch == 17:
+        learning_rate *= 0.1
+        optimizer = Adam(gnet.parameters(), lr = learning_rate)
     f, input, label, states = data.load(0)
     model.init_hidden()
     gnet.init_hidden()
@@ -72,7 +72,7 @@ for epoch in range(epochs):
         loss = gnet.loss(output, states)
         loss.backward()
         optimizer.step()
-        running_loss += loss.item() / input.shape[0]
+        running_loss += loss.item()
         c += 1
         if f == -1:
             break
@@ -97,7 +97,7 @@ for epoch in range(epochs):
                 input, label, states = input.to(device), label.to(device), states.to(device)
                 output = model.forward(input)
                 output = gnet.forward(output)
-                running_loss += gnet.loss(output, states) / input.shape[0]
+                running_loss += gnet.loss(output, states)
                 acc += accuracy(output, states)
                 c += 1
                 if f == -1:

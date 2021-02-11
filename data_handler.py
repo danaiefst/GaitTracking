@@ -79,13 +79,14 @@ class LegDataLoader():
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
+        self.gait = gait
         #Train set
         for path in paths[:-2]:
             #print(path)
             os.chdir(data_path + path)
             if gait:
                 valid = open("gait_valid.txt", "r")
-                states = open("gait_states.txt", "r")
+                states = np.genfromtxt("gait_states.csv", delimiter = ",")
             else:
                 valid = open("valid.txt", "r")
             laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
@@ -107,7 +108,7 @@ class LegDataLoader():
         self.cg_data = []
         os.chdir(data_path + "cgdata")
         if gait:
-            states = open("gait_states.txt", "r")
+            states = np.genfromtxt("gait_states.csv", delimiter = ",")
         valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
         centers = np.genfromtxt("centers.csv", delimiter = ",")
@@ -130,7 +131,7 @@ class LegDataLoader():
         os.chdir(data_path + paths[-2])
         if gait:
             valid = open("gait_valid.txt", "r")
-            states = open("gait_states.txt", "r")
+            states = np.genfromtxt("gait_states.csv", delimiter = ",")
         else:
             valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
@@ -153,7 +154,7 @@ class LegDataLoader():
         os.chdir(data_path + paths[-1])
         if gait:
             valid = open("gait_valid.txt", "r")
-            states = open("gait_states.txt", "r")
+            states = np.genfromtxt("gait_states.csv", delimiter = ",")
         else:
             valid = open("valid.txt", "r")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
@@ -192,7 +193,7 @@ class LegDataLoader():
         flag = 0
         batchd = []
         batchl = []
-        if gait:
+        if self.gait:
             batchs = []
         for i in range(self.batch_size):
             img = torch.zeros((img_side, img_side), dtype=torch.double)
@@ -211,7 +212,7 @@ class LegDataLoader():
             x2 = 1 - (center[3] - min_height) / (max_height - min_height)
             tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
 
-            if gait:
+            if self.gait:
                 batchs.append(data[self.i][self.j][2] - 1)
             
             if self.phase == 0 or self.phase > 7:
@@ -239,15 +240,15 @@ class LegDataLoader():
                         flag = 1
                     self.i = 0
                     self.j = 0
-                    if gait:
-                        return flag, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.double)
+                    if self.gait:
+                        return flag, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
                     return flag, torch.stack(batchd), torch.stack(batchl)
                 self.j = 0
                 self.i += 1
-                if gait:
-                    return 1, torch.stack(batchd), torch,stack(batchl), torch.tensor(batchs, dtype=torch.double)
+                if self.gait:
+                    return 1, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
                 return 1, torch.stack(batchd), torch.stack(batchl)
             self.j += 1
-        if gait:
-            return 0, torch.stack(batchd), torch,stack(batchl), torch.tensor(batchs, dtype=torch.double)
+        if self.gait:
+            return 0, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
         return 0, torch.stack(batchd), torch.stack(batchl)

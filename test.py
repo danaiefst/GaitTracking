@@ -1,7 +1,7 @@
 import torch
 from matplotlib import pyplot as plt
 import data_handler
-import tracking_nn
+import tracking_nn1
 import time
 
 img_side = 112
@@ -34,10 +34,10 @@ def print_data(img, found, real):
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
     #plt.show()
     plt.show(block=False)
-    plt.pause(0.1)
+    plt.pause(0.5)
     plt.clf()
 
-def check_out(batch, out, label):
+def check_out(batch, out, label, states, real):
     for i in range(out.shape[0]):
         y = batch[i]
         yh = out[i]
@@ -47,6 +47,7 @@ def check_out(batch, out, label):
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
         x_cell1, y_cell1 = detect_cell1 // grid, detect_cell1 % grid
         x_cell2, y_cell2 = detect_cell2 // grid, detect_cell2 % grid
+        print(states[i].argmax(), real[i])
         print_data(y, torch.tensor([[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]]), label[i])
 
 
@@ -72,31 +73,43 @@ def median(l):
         return l[len(l) // 2]
 
 
+def accuracy(out, states):
+    classes = out.argmax(axis=1)
+    return (classes[0] == states[0])
+    
 data_path = "/home/danai/Desktop/GaitTracking/data/"
 paths=["p18/2.a", "p18/3.a"]
-data = data_handler.LegDataLoader(data_path = data_path, paths = paths)
+data = data_handler.LegDataLoader(gait = 1, data_path = data_path, paths = paths)
 print("Loading dataset...")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-cnn = tracking_nn.CNN().to(device)
-rnn = tracking_nn.RNN().to(device)
-net = tracking_nn.Net(device, cnn, rnn).to(device)
+cnn = tracking_nn1.CNN().to(device)
+rnn = tracking_nn1.RNN().to(device)
+net = tracking_nn1.Net(device, cnn, rnn).to(device)
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
 net.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device))
+gnet = tracking_nn1.GNet(device).to(device)
+gnet.load_state_dict(torch.load("/home/danai/Desktop/GaitTracking/gmodel1.pt", map_location=device))
 all_dists = []
-f, input, label = data.load(1)
+f, input, label, states = data.load(1)
 net.init_hidden()
+gnet.init_hidden()
+acc = 0
+c = 1
 with torch.no_grad():
     while True:
         if f:
             net.init_hidden()
-        input, label = input.to(device), label.to(device)
+        input, label, states = input.to(device), label.to(device), states.to(device)
+        c += 1
         out = net(input)
+        out1 = gnet(out)
+        acc += accuracy(out1, states)
         all_dists.extend(eucl_dist(out, label))
-        check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
+        #check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")), out1, states)
         if f == -1:
             break
-        f, input, label = data.load(1)
+        f, input, label, states = data.load(1)
 
 all_dists.sort()
-print("Mean dist:", sum(all_dists) / len(all_dists) / grid, "Max dist:", max(all_dists) / grid, "Median dist:", median(all_dists) / grid)
+print("Gait acc:", acc / c * 100)

@@ -1,14 +1,37 @@
-import data_handler
+import numpy as np
+import os
+import torch
+from matplotlib import pyplot as plt
 
-data = data_handler.LegDataLoader(batch_size = 32, data_path = "/home/danai/Desktop/GaitTracking/data/", paths = ["p1/2.a", "p18/2.a", "p18/3.a"])
-f, input, label = data.load(0)
-c = 1
-while(True):
-    #for i in range(len(input)):
-        #print(label[i])
-    #    data_handler.print_data(input[i], label[i], fast = 0.1)
-    if f == -1:
-        break
-    f, input, label = data.load(0)
-    c += 1
-print(c)
+path = "/home/danai/Desktop/GaitTracking/data/p18/3.a"
+
+os.chdir(path)
+laser = np.genfromtxt("laserpoints.csv", delimiter=",")
+centers = np.genfromtxt("centers.csv", delimiter=",")
+
+max_height = 1.2
+min_height = 0.2
+max_width = 0.5
+min_width = -0.5
+img_side = 112
+
+def find_center(label):
+    ret = label * img_side
+    return ret[0][0], ret[0][1], ret[1][0], ret[1][1]
+
+
+#plt.show()
+
+
+for i in range(len(laser)):
+    plt.title(i)
+    l1 = laser[i]
+    l = l1.reshape((int(l1.shape[0] / 2), 2))
+    plt.xlim(min_width, max_width)
+    plt.ylim(min_height, max_height)
+    plt.scatter(l[:, 0], l[:, 1], c = 'b', marker = '.')
+    plt.scatter(centers[i][0], centers[i][1], c = 'r', marker = 'v')
+    plt.scatter(centers[i][2], centers[i][3], c = 'y', marker = 'v')    
+    plt.show(block=False)
+    plt.pause(0.01)
+    plt.clf()
