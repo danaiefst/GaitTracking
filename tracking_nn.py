@@ -108,13 +108,13 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 512),
+            Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #294 = 6*7*7
@@ -163,8 +163,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        #return self.cnn(x)
-        return self.rnn(self.cnn(x))
+        return self.cnn(x)
+        #return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
         #Probability loss
@@ -188,5 +188,5 @@ class Net(Module):
         #Association loss
         assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
         #print(detect_loss * 5, assoc_loss/150)
-        return prob_loss + 5 * detect_loss + assoc_loss / 10
-        #return prob_loss + 5 * detect_loss
+        #return prob_loss + 5 * detect_loss + assoc_loss / 10
+        return prob_loss + 5 * detect_loss
