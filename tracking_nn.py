@@ -132,17 +132,21 @@ class GNet(Module):
         self.h1 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
         self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
         self.h3 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
+        self.h4 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
+
 
     def detach_hidden(self):
         self.h1 = (self.h1[0].detach(), self.h1[1].detach())
         self.h2 = (self.h2[0].detach(), self.h2[1].detach())
         self.h3 = (self.h3[0].detach(), self.h3[1].detach())
+        self.h4 = (self.h4[0].detach(), self.h4[1].detach())
+
         
     def __init__(self, device):
         super(GNet, self).__init__()
         self.bi = 0
         self.num_layers = 1
-        self.input_size = 294
+        self.input_size = 4
         self.hidden = 100
         self.linears = Sequential(
             Linear(self.hidden, 4),
@@ -151,11 +155,12 @@ class GNet(Module):
         self.rnn1 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
         self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
+        self.rnn4 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.l = CrossEntropyLoss()
         self.device = device
 
     def forward(self, x):
-        #x = find_center(x)
+        x = find_center(x)
         x = x.view(1, x.size(0), -1)
         x, self.h1 = self.rnn1(x, self.h1)
         #x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
@@ -166,7 +171,9 @@ class GNet(Module):
         z = Dropout(0.2)(y)
         z, self.h3 = self.rnn3(z, self.h3)
         #z = z[:, :, :int(z.shape[2] / 2)] + z[:, :, int(z.shape[2] / 2):]
-        x = x + y + z
+        w = Dropout(0.2)(z)
+        w, self.h3 = self.rnn4(w, self.h3)
+        x = x + y + z + w
         x = x.view(x.size(1), -1)
         x = self.linears(x)
         #y, self.h2 = self.rnn2(y, self.h2)

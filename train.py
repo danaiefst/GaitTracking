@@ -53,9 +53,12 @@ def accuracy(out, states):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 3 or epoch == 7 or epoch == 17:
+    if epoch == 3 or epoch == 7 or epoch == 10:
         learning_rate *= 0.1
         optimizer = Adam(gnet.parameters(), lr = learning_rate)
+    #if epoch == 17:
+    #    learning_rate /= 0.1
+    #    optimizer = Adam(gnet.parameters(), lr = learning_rate)
     f, input, label, states = data.load(0)
     model.init_hidden()
     gnet.init_hidden()

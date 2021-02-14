@@ -75,11 +75,12 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"], gait = 0):
+    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"], gait = 0, cg = 1):
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
         self.gait = gait
+        self.cg = cg
         #Train set
         for path in paths[:-2]:
             #print(path)
@@ -105,25 +106,26 @@ class LegDataLoader():
                 self.train_data.append(subvideo)
 
         #CG data set
-        self.cg_data = []
-        os.chdir(data_path + "cgdata")
-        if gait:
-            states = np.genfromtxt("gait_states.csv", delimiter = ",")
-        valid = open("valid.txt", "r")
-        laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
-        centers = np.genfromtxt("centers.csv", delimiter = ",")
-        for line in valid:
-            start, end = line.strip().split(" ")
-            i = int(start)
-            end = int(end)
-            subvideo = []
-            while i <= end:
-                if gait:
-                    subvideo.append((laser[i], centers[i], states[i]))
-                else:
-                    subvideo.append((laser[i], centers[i]))
-                i += 1
-            self.cg_data.append(subvideo)
+        if cg:
+            self.cg_data = []
+            os.chdir(data_path + "cgdata")
+            if gait:
+                states = np.genfromtxt("gait_states.csv", delimiter = ",")
+            valid = open("valid.txt", "r")
+            laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
+            centers = np.genfromtxt("centers.csv", delimiter = ",")
+            for line in valid:
+                start, end = line.strip().split(" ")
+                i = int(start)
+                end = int(end)
+                subvideo = []
+                while i <= end:
+                    if gait:
+                        subvideo.append((laser[i], centers[i], states[i]))
+                    else:
+                        subvideo.append((laser[i], centers[i]))
+                    i += 1
+                self.cg_data.append(subvideo)
 
                 
         #Val set
@@ -180,16 +182,16 @@ class LegDataLoader():
         #print(self.phase, self.i, self.j)
         #Set is 0 for test set,
         if set == 0:
-            if self.phase == 8:
+            if self.cg and self.phase == 8:
                 data = self.cg_data
             else:
                 data = self.train_data
         elif set == 1:
             data = self.val_data
-            self.phase = 9
+            self.phase = 8 + self.cg
         else:
             data = self.test_data
-            self.phase = 9
+            self.phase = 8 + self.cg
         flag = 0
         batchd = []
         batchl = []
@@ -229,11 +231,11 @@ class LegDataLoader():
             if self.j == len(data[self.i]) - 1:
                 if self.i == len(data) - 1:
                     self.phase += 1
-                    if self.phase == 8:
+                    if self.cg and self.phase == 8:
                         self.i = 0
                         self.j = 0
                     #print(self.phase)
-                    if self.phase > 8:
+                    if self.phase > (7 + self.cg):
                         flag = -1
                         self.phase = 0
                     else:
