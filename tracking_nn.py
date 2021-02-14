@@ -108,13 +108,13 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            Conv2d(16, 16, kernel_size=3),
-            BatchNorm2d(16),
-            ReLU(inplace=True),
+            #Conv2d(16, 16, kernel_size=3),
+            #BatchNorm2d(16),
+            #ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(784, 512),
+            Linear(1296, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #294 = 6*7*7
@@ -132,19 +132,26 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
+        self.h1 = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
+        self.h2 = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
+
 
     def detach_hidden(self):
-        self.h = (self.h[0].detach(), self.h[1].detach())
-        
+        self.h1 = (self.h1[0].detach(), self.h1[1].detach())
+        self.h2 = (self.h2[0].detach(), self.h2[1].detach())        
+
     def __init__(self):
         super(RNN, self).__init__()
         self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn1 = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn2 = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
+        x, self.h1 = self.rnn1(x, self.h1)
+        y = Dropout(0.2)(x)
+        y, self.h2 = self.rnn2(y, self.h2)
+        x = x + y
         x = x.view((x.size(1), 6, grid, grid))
         return x
 
@@ -163,8 +170,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        return self.cnn(x)
-        #return self.rnn(self.cnn(x))
+        #return self.cnn(x)
+        return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
         #Probability loss
@@ -188,5 +195,5 @@ class Net(Module):
         #Association loss
         assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
         #print(detect_loss * 5, assoc_loss/150)
-        #return prob_loss + 5 * detect_loss + assoc_loss / 10
-        return prob_loss + 5 * detect_loss
+        return prob_loss + 5 * detect_loss + assoc_loss / 10
+        #return prob_loss + 5 * detect_loss
