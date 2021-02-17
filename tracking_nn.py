@@ -132,23 +132,19 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h1 = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
-        self.h2 = (torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.zeros(self.num_of_layers, 1, 6 * grid * grid).to(device))
-
+        self.h = (torch.zeros(2, 1, 6 * grid * grid).to(device), torch.zeros(2, 1, 6 * grid * grid).to(device))
 
     def detach_hidden(self):
-        self.h1 = (self.h1[0].detach(), self.h1[1].detach())
-        self.h2 = (self.h2[0].detach(), self.h2[1].detach())        
+        self.h = (self.h[0].detach(), self.h[1].detach())
 
     def __init__(self):
         super(RNN, self).__init__()
-        self.num_of_layers = 1
-        self.rnn1 = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
-        self.rnn2 = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, batch_first = True, bidirectional=True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
-        x, self.h1 = self.rnn1(x, self.h1)
+        x, self.h = self.rnn(x, self.h)
+        x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
         x = x.view((x.size(1), 6, grid, grid))
         return x
 

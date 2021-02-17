@@ -11,8 +11,8 @@ flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 #path = "/home/athdom/GaitTracking/"
-path = "/home/iral-lab/GaitTracking/"
-#path = "/home/danai/Desktop/GaitTracking/"
+#path = "/home/iral-lab/GaitTracking/"
+path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
 
@@ -21,7 +21,7 @@ cnn = tracking_nn.CNN().to(device)
 #    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
 #    for param in cnn.parameters():
 #        param.requires_grad = False
-rnn = tracking_nn.TCN(batch_size).to(device)
+rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path)
 # Train the nn
@@ -60,15 +60,15 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 5 or epoch == 8 or epoch == 17:
+    if epoch == 10 or epoch == 23:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
-    #model.init_hidden()
+    model.init_hidden()
     c = 0
     while(True):
-        #if f:
-            #model.init_hidden()
+        if f:
+            model.init_hidden()
         input, label = input.to(device), label.to(device)
         optimizer.zero_grad()
         output = model.forward(input)
@@ -82,7 +82,7 @@ for epoch in range(epochs):
             break
         f, input, label = data.load(0)
         #model.init_hidden()
-        #model.detach_hidden()
+        model.detach_hidden()
     print("epoch:{}, running loss: {}, #n: {}".format(epoch, running_loss / c, c))
     running_loss = 0
     if epoch >= patience:
@@ -91,11 +91,11 @@ for epoch in range(epochs):
             dist = 0
             c = 0
             f, input, label = data.load(1)
-            #model.init_hidden()
+            model.init_hidden()
             m = 0
             while(True):
-                #if f:
-                #    model.init_hidden()
+                if f:
+                    model.init_hidden()
                 input, label = input.to(device), label.to(device)
                 output = model.forward(input)
                 acc += model.loss(output, label) / input.shape[0]
@@ -112,6 +112,6 @@ for epoch in range(epochs):
                 best_acc = acc
                 print("Saving model with acc:", acc / c, ", mean dist:", dist / c / grid * 100, ", max dist:", m / grid * 100) #mean dist in cm
                 if flag:
-                    torch.save(model.state_dict(), save_path)
+                    torch.save(model, save_path)
                 else:
                     torch.save(cnn.state_dict(), save_path)
