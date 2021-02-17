@@ -69,7 +69,7 @@ class TemporalConvNet(Module):
 class TCN(Module):
     def __init__(self, batch_size):
         super(TCN, self).__init__()
-        self.tcn = TemporalConvNet(batch_size, [batch_size] * 4, kernel_size=7)
+        self.tcn = TemporalConvNet(batch_size, [batch_size] * 5, kernel_size=7)
         self.batch_size = batch_size
         
     def forward(self, x):
@@ -167,8 +167,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        return self.cnn(x)
-        #return self.rnn(self.cnn(x))
+        #return self.cnn(x)
+        return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
         #Probability loss
