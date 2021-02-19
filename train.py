@@ -17,10 +17,10 @@ data_path = path + "data/"
 batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
-#if flag:
-#    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
-#    for param in cnn.parameters():
-#        param.requires_grad = False
+if flag:
+    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
+    for param in cnn.parameters():
+        param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path)
