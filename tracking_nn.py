@@ -43,13 +43,13 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 512),
+            Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #294 = 6*7*7
@@ -170,10 +170,7 @@ class GNet(Module):
         #y = y[:, :, :int(y.shape[2] / 2)] + y[:, :, int(y.shape[2] / 2):]
         z = Dropout(0.2)(y)
         z, self.h3 = self.rnn3(z, self.h3)
-        #z = z[:, :, :int(z.shape[2] / 2)] + z[:, :, int(z.shape[2] / 2):]
-        w = Dropout(0.2)(z)
-        w, self.h3 = self.rnn4(w, self.h3)
-        x = x + y + z + w
+        x = x + y + z
         x = x.view(x.size(1), -1)
         x = self.linears(x)
         #y, self.h2 = self.rnn2(y, self.h2)

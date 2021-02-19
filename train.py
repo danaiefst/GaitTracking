@@ -14,7 +14,7 @@ print("Working on", device)
 #path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
 path = "/home/danai/Desktop/GaitTracking/"
-paths = ["p1/2.a", "p11/2.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"]
+paths = ["p1/2.a", "p5/2.a", "p11/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"]
 data_path = path + "data/" 
 batch_size = 32
 
@@ -25,7 +25,7 @@ cnn = tracking_nn.CNN().to(device)
 #        param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-model.load_state_dict(torch.load(path + "model.pt", map_location = device))
+model.load_state_dict(torch.load(path + "best_model.pt", map_location = device))
 for param in model.parameters():
     param.requires_grad = False
 gnet = tracking_nn.GNet(device).to(device)
