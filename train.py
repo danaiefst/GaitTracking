@@ -18,16 +18,7 @@ paths = ["p1/2.a", "p5/2.a", "p11/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.
 data_path = path + "data/" 
 batch_size = 32
 
-cnn = tracking_nn.CNN().to(device)
-#if flag:
-#    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
-#    for param in cnn.parameters():
-#        param.requires_grad = False
-rnn = tracking_nn.RNN().to(device)
-model = tracking_nn.Net(device, cnn, rnn).to(device)
-model.load_state_dict(torch.load(path + "best_model.pt", map_location = device))
-for param in model.parameters():
-    param.requires_grad = False
+model = torch.load(path + "best_model.pt", map_location = device)
 gnet = tracking_nn.GNet(device).to(device)
 data = data_handler.LegDataLoader(gait = 1, batch_size = batch_size, data_path = data_path, paths = paths)
 # Train the nn
@@ -115,4 +106,4 @@ for epoch in range(epochs):
                 elif flag == 0:
                     torch.save(cnn.state_dict(), save_path)
                 else:
-                    torch.save(gnet.state_dict(), save_path)
+                    torch.save(gnet, save_path)

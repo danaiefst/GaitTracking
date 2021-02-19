@@ -132,14 +132,12 @@ class GNet(Module):
         self.h1 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
         self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
         self.h3 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
-        self.h4 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
 
 
     def detach_hidden(self):
         self.h1 = (self.h1[0].detach(), self.h1[1].detach())
         self.h2 = (self.h2[0].detach(), self.h2[1].detach())
         self.h3 = (self.h3[0].detach(), self.h3[1].detach())
-        self.h4 = (self.h4[0].detach(), self.h4[1].detach())
 
         
     def __init__(self, device):
@@ -155,7 +153,6 @@ class GNet(Module):
         self.rnn1 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
         self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
-        self.rnn4 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.l = CrossEntropyLoss()
         self.device = device
 
