@@ -132,19 +132,19 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.zeros(2, 1, 6 * grid * grid).to(device), torch.zeros(2, 1, 6 * grid * grid).to(device))
+        self.h = (torch.zeros(1, 1, 6 * grid * grid).to(device), torch.zeros(1, 1, 6 * grid * grid).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
 
     def __init__(self):
         super(RNN, self).__init__()
-        self.rnn = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, batch_first = True, bidirectional=True)
+        self.rnn = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
         x, self.h = self.rnn(x, self.h)
-        x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
+        #x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
         x = x.view((x.size(1), 6, grid, grid))
         return x
 
