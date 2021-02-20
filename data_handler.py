@@ -75,33 +75,25 @@ def find_center(label):
 class LegDataLoader():
 
     """expecting to find at data_paths a data and a labels folder"""
-    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"], gait = 0, cg = 1):
+    def __init__(self, batch_size = 32, grid = 7, data_path="/home/athdom/GaitTracking/data/", paths = ["p1/2.a","p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"], cg = 1):
         self.grid = grid
         self.batch_size = batch_size
         self.train_data = []
-        self.gait = gait
         self.cg = cg
         #Train set
         for path in paths[:-2]:
             #print(path)
             os.chdir(data_path + path)
-            if gait:
-                valid = open("gait_valid.txt", "r")
-                states = np.genfromtxt("gait_states.csv", delimiter = ",")
-            else:
-                valid = open("valid.txt", "r")
+            valid = open("gait_valid.txt", "r")
+            states = np.genfromtxt("gait_states.csv", delimiter = ",")
             laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
-            centers = np.genfromtxt("centers.csv", delimiter = ",")
             for line in valid:
                 start, end = line.strip().split(" ")
                 i = int(start)
                 end = int(end)
                 subvideo = []
                 while i <= end:
-                    if gait:
-                        subvideo.append((laser[i], centers[i], states[i]))
-                    else:
-                        subvideo.append((laser[i], centers[i]))
+                    subvideo.append((laser[i], states[i]))
                     i += 1
                 self.train_data.append(subvideo)
 
@@ -109,21 +101,16 @@ class LegDataLoader():
         if cg:
             self.cg_data = []
             os.chdir(data_path + "cgdata")
-            if gait:
-                states = np.genfromtxt("gait_states.csv", delimiter = ",")
+            states = np.genfromtxt("gait_states.csv", delimiter = ",")
             valid = open("valid.txt", "r")
             laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
-            centers = np.genfromtxt("centers.csv", delimiter = ",")
             for line in valid:
                 start, end = line.strip().split(" ")
                 i = int(start)
                 end = int(end)
                 subvideo = []
                 while i <= end:
-                    if gait:
-                        subvideo.append((laser[i], centers[i], states[i]))
-                    else:
-                        subvideo.append((laser[i], centers[i]))
+                    subvideo.append((laser[i], states[i]))
                     i += 1
                 self.cg_data.append(subvideo)
 
@@ -131,46 +118,32 @@ class LegDataLoader():
         #Val set
         self.val_data = []
         os.chdir(data_path + paths[-2])
-        if gait:
-            valid = open("gait_valid.txt", "r")
-            states = np.genfromtxt("gait_states.csv", delimiter = ",")
-        else:
-            valid = open("valid.txt", "r")
+        valid = open("gait_valid.txt", "r")
+        states = np.genfromtxt("gait_states.csv", delimiter = ",")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
-        centers = np.genfromtxt("centers.csv", delimiter = ",")
         for line in valid:
             start, end = line.strip().split(" ")
             i = int(start)
             end = int(end)
             subvideo = []
             while i <= end:
-                if gait:
-                    subvideo.append((laser[i], centers[i], states[i]))
-                else:
-                    subvideo.append((laser[i], centers[i]))
+                subvideo.append((laser[i], states[i]))
                 i += 1
             self.val_data.append(subvideo)
 
         #Test set
         self.test_data = []
         os.chdir(data_path + paths[-1])
-        if gait:
-            valid = open("gait_valid.txt", "r")
-            states = np.genfromtxt("gait_states.csv", delimiter = ",")
-        else:
-            valid = open("valid.txt", "r")
+        valid = open("gait_valid.txt", "r")
+        states = np.genfromtxt("gait_states.csv", delimiter = ",")
         laser = np.genfromtxt("laserpoints.csv", delimiter = ",")
-        centers = np.genfromtxt("centers.csv", delimiter = ",")
         for line in valid:
             start, end = line.strip().split(" ")
             i = int(start)
             end = int(end)
             subvideo = []
             while i <= end:
-                if gait:
-                    subvideo.append((laser[i], centers[i], states[i]))
-                else:
-                    subvideo.append((laser[i], centers[i]))
+                subvideo.append((laser[i], states[i]))
                 i += 1
             self.test_data.append(subvideo)
 
@@ -194,39 +167,26 @@ class LegDataLoader():
             self.phase = 8 + self.cg
         flag = 0
         batchd = []
-        batchl = []
-        if self.gait:
-            batchs = []
+        batchs = []
         for i in range(self.batch_size):
             img = torch.zeros((img_side, img_side), dtype=torch.double)
             laser = data[self.i][self.j][0]
             laser_spots = laser.reshape((int(laser.shape[0] / 2), 2))
-            v = laser_spots[:, 1] >= 0.2
+            v = (laser_spots[:, 1] >= min_height) * (laser_spots[:, 1] <= max_height) * (laser_spots[:, 1] >= min_height) * (laser_spots[:, 0] >= min_width) * (laser_spots[:, 0] <= max_width)
             y = (laser_spots[:, 0][v] - min_width) / (max_width - min_width) * img_side
             x = img_side - (laser_spots[:, 1][v] - min_height) / (max_height - min_height) * img_side
             
             img[x.astype(int), y.astype(int)] = 1
 
-            center = data[self.i][self.j][1]
-            y1 = (center[0] - min_width) / (max_width - min_width)
-            x1 = 1 - (center[1] - min_height) / (max_height - min_height)
-            y2 = (center[2] - min_width) / (max_width - min_width)
-            x2 = 1 - (center[3] - min_height) / (max_height - min_height)
-            tag = torch.tensor([[x1, y1], [x2, y2]], dtype=torch.double)
-
-            if self.gait:
-                batchs.append(data[self.i][self.j][2] - 1)
+            batchs.append(data[self.i][self.j][1] - 1)
             
             if self.phase == 0 or self.phase > 7:
                 batchd.append(img)
-                batchl.append(tag * grid)
             elif self.phase == 1:
                 batchd.append(mirrori(img))
-                batchl.append(mirrorl(tag) * grid)
             else:
                 s = shifts[self.phase - 2]
                 batchd.append(shifti(img, int(s[0]), int(s[1])))
-                batchl.append((tag + s / img_side) * grid)
             #If no need for init_hidden (LSTM hidden state initialization) then flag = 0, if need for init_hidden flag = 1, if last data flag = -1
             if self.j == len(data[self.i]) - 1:
                 if self.i == len(data) - 1:
@@ -242,15 +202,9 @@ class LegDataLoader():
                         flag = 1
                     self.i = 0
                     self.j = 0
-                    if self.gait:
-                        return flag, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
-                    return flag, torch.stack(batchd), torch.stack(batchl)
+                    return flag, torch.stack(batchd), torch.tensor(batchs, dtype=torch.long)
                 self.j = 0
                 self.i += 1
-                if self.gait:
-                    return 1, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
-                return 1, torch.stack(batchd), torch.stack(batchl)
+                return 1, torch.stack(batchd), torch.tensor(batchs, dtype=torch.long)
             self.j += 1
-        if self.gait:
-            return 0, torch.stack(batchd), torch.stack(batchl), torch.tensor(batchs, dtype=torch.long)
-        return 0, torch.stack(batchd), torch.stack(batchl)
+            return 0, torch.stack(batchd), torch.tensor(batchs, dtype=torch.long)

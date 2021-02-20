@@ -67,14 +67,13 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.randn(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.randn(self.num_of_layers, 1, 6 * grid * grid).to(device))
+        self.h = (torch.randn(1, 1, 6 * grid * grid).to(device), torch.randn(1, 1, 6 * grid * grid).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
         
     def __init__(self):
         super(RNN, self).__init__()
-        self.num_of_layers = 1
         self.rnn_layers = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
 
     def forward(self, x):
