@@ -1,3 +1,5 @@
 laserpoints.csv
+data/cgdata/valid.txt
+data/cgdata/centers.csv
 *.save
 *.pyc

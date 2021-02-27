@@ -168,12 +168,11 @@ class walk:
 #r, = ax.plot([0], [0], 'o')
 #l, = ax.plot([0], [0], 'o')
 #ls, = ax.plot([0], [0], 'o', markersize=1)
-data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
-os.chdir(data_path)
+data_path = "data/cgdata/"
 N = 1000
 vision = 0.6
 c = 0
-valid = open("valid.txt", "w")
+valid = open(data_path + "valid.txt", "w")
 laser = np.zeros((13 * 4 * N, 1400))
 centers = np.zeros((13 * 4 * N, 4))
 gait_states = np.zeros((13 * 4 * N))
@@ -197,6 +196,6 @@ for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
             #print(gait_states[c])
             c += 1
  
-np.savetxt("laserpoints.csv", laser, delimiter=",")
-np.savetxt("centers.csv", centers, delimiter=",")
-np.savetxt("gait_states.csv", gait_states, delimiter=",")
+np.savetxt(data_path + "laserpoints.csv", laser, delimiter=",")
+np.savetxt(data_path + "centers.csv", centers, delimiter=",")
+#np.savetxt(data_path + "gait_states.csv", gait_states, delimiter=",")

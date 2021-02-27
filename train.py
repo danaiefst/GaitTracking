@@ -9,21 +9,18 @@ from torch.optim import Adam
 
 flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print("Working on", device)
-#path = "/home/athdom/GaitTracking/"
-path = "/home/iral-lab/GaitTracking/"
-#path = "/home/danai/Desktop/GaitTracking/"
-data_path = path + "data/" 
+print("Working on", device) 
 batch_size = 32
+paths = ["p1/2.a", "p5/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/3.a", "p18/2.a", "p11/2.a"]
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
-    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
+    cnn.load_state_dict(torch.load("cnn_model.pt", map_location = device))
     for param in cnn.parameters():
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path)
+data = data_handler.LegDataLoader(batch_size = batch_size, paths = paths)
 # Train the nn
 
 epochs = 1000
@@ -33,9 +30,9 @@ grid = 7
 optimizer = Adam(model.parameters(), lr = learning_rate)
 best_acc = float("Inf")
 if flag:
-    save_path = path + "model.pt"
+    save_path = "model.pt"
 else:
-    save_path = path + "cnn_model.pt"
+    save_path = "cnn_model.pt"
 
 def eucl_dist(out, labels):
     ret = 0
@@ -60,7 +57,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 11:# or epoch == 28:
+    if epoch == 10 or epoch == 25:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
