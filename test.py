@@ -27,10 +27,10 @@ def print_data(img, found):
     plt.scatter(x2h, y2h, c = 'y', marker = 'o')
     #plt.show()
     plt.show(block=False)
-    plt.pause(0.5)
+    plt.pause(0.01)
     plt.clf()
 
-def check_out(batch, out, label, states, real):
+def check_out(batch, out, out1, states):
     for i in range(out.shape[0]):
         y = batch[i]
         yh = out[i]
@@ -40,8 +40,8 @@ def check_out(batch, out, label, states, real):
         detect_cell2 = p2_h.reshape(-1).argmax(axis = 0)
         x_cell1, y_cell1 = detect_cell1 // grid, detect_cell1 % grid
         x_cell2, y_cell2 = detect_cell2 // grid, detect_cell2 % grid
-        print("Found state", states[i].argmax(), ", Real state", real[i])
-        print_data(y, torch.tensor([[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]]), label[i])
+        print("Found state", out1[i].argmax().item(), ", Real state", states[i].item())
+        print_data(y, torch.tensor([[x_cell1 + out[i][1, x_cell1, y_cell1], y_cell1 + out[i][2, x_cell1, y_cell1]], [x_cell2 + out[i][4, x_cell2, y_cell2], y_cell2 + out[i][5, x_cell2, y_cell2]]]))
 
 
 def eucl_dist(out, labels):
@@ -78,7 +78,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
 #net.to(device)
 net = torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device)
-gnet = torch.load("/home/danai/Desktop/GaitTracking/gmodel.pt", map_location=device)
+gnet = torch.load("/home/danai/Desktop/GaitTracking/best_gmodel.pt", map_location=device)
+print(gnet)
 net.eval()
 gnet.eval()
 all_dists = []
@@ -97,11 +98,10 @@ with torch.no_grad():
         out = net(input)
         out1 = gnet(out)
         acc += accuracy(out1, states)
-        all_dists.extend(eucl_dist(out, label))
-        check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), out1, states)
+        #check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), out1, states)
         if f == -1:
             break
-        f, input, label = data.load(2)
+        f, input, states = data.load(2)
 
 all_dists.sort()
 print("Gait acc:", acc / c * 100)

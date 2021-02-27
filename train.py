@@ -21,7 +21,7 @@ data = data_handler.LegDataLoader(batch_size = batch_size, paths = paths)
 
 epochs = 1000
 patience = 0
-learning_rate = 0.0001
+learning_rate = 0.001
 grid = 7
 optimizer = Adam(gnet.parameters(), lr = learning_rate)
 best_loss = float("Inf")
@@ -35,7 +35,7 @@ def accuracy(out, states):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 8:# or epoch == 23:# or epoch == 30:
+    if epoch == 13 or epoch == 26:# or epoch == 30:
         learning_rate *= 0.1
         optimizer = Adam(gnet.parameters(), lr = learning_rate)
     #if epoch == 17:
@@ -49,6 +49,7 @@ for epoch in range(epochs):
         if f:
             model.init_hidden()
             gnet.init_hidden()
+        #print(input.shape, states.shape)
         input, states = input.to(device), states.to(device)
         optimizer.zero_grad()
         with torch.no_grad():

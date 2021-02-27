@@ -43,13 +43,13 @@ class CNN(Module):
             Conv2d(16, 16, kernel_size=3),
             BatchNorm2d(16),
             ReLU(inplace=True),
-            #Conv2d(16, 16, kernel_size=3),
-            #BatchNorm2d(16),
-            #ReLU(inplace=True),
+            Conv2d(16, 16, kernel_size=3),
+            BatchNorm2d(16),
+            ReLU(inplace=True),
         )
 
         self.linear_layers = Sequential(
-            Linear(1296, 512),
+            Linear(784, 512),
             Dropout(0.5),
             ReLU(inplace=True),
             Linear(512, 294),    #294 = 6*7*7
@@ -67,19 +67,19 @@ class CNN(Module):
 
 class RNN(Module):
     def init_hidden(self, device):
-        self.h = (torch.randn(self.num_of_layers, 1, 6 * grid * grid).to(device), torch.randn(self.num_of_layers, 1, 6 * grid * grid).to(device))
+        self.h = (torch.zeros(1, 1, 6 * grid * grid).to(device), torch.zeros(1, 1, 6 * grid * grid).to(device))
 
     def detach_hidden(self):
         self.h = (self.h[0].detach(), self.h[1].detach())
-        
+
     def __init__(self):
         super(RNN, self).__init__()
-        self.num_of_layers = 1
-        self.rnn_layers = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, num_layers = self.num_of_layers, batch_first = True)
+        self.rnn = LSTM(input_size = 6 * grid * grid, hidden_size = 6 * grid * grid, batch_first = True)
 
     def forward(self, x):
         x = x.view(1, x.size(0), -1)
-        x, self.h = self.rnn_layers(x, self.h)
+        x, self.h = self.rnn(x, self.h)
+        #x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
         x = x.view((x.size(1), 6, grid, grid))
         return x
 
@@ -98,8 +98,8 @@ class Net(Module):
         self.device = device
 
     def forward(self, x):
-        return self.cnn(x)
-        #return self.rnn(self.cnn(x))
+        #return self.cnn(x)
+        return self.rnn(self.cnn(x))
 
     def loss(self, yh, y):
         #Probability loss
@@ -123,54 +123,58 @@ class Net(Module):
         #Association loss
         assoc_loss = ((rlegh[1:, 0] + rlegx.double()[1:] - rlegh[:-1, 0] + rlegx.double()[:-1]) ** 2 + (rlegh[1:, 1] + rlegy.double()[1:] - rlegh[:-1, 1] + rlegy.double()[:-1]) ** 2 + (llegh[1:, 0] + llegx.double()[1:] - llegh[:-1, 0] + llegx.double()[:-1]) ** 2 + (llegh[1:, 1] + llegy.double()[1:] - llegh[:-1, 1] + llegy.double()[:-1]) ** 2).sum()
         #print(detect_loss * 5, assoc_loss/150)
-        #return prob_loss + 2 * detect_loss + assoc_loss / 10
+        #return prob_loss + 5 * detect_loss + assoc_loss / 10
         return prob_loss + 5 * detect_loss
 
 class GNet(Module):
 
     def init_hidden(self):
         self.h1 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
-        self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
+        self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, 200).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, 200).to(self.device))
         self.h3 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
+
 
     def detach_hidden(self):
         self.h1 = (self.h1[0].detach(), self.h1[1].detach())
         self.h2 = (self.h2[0].detach(), self.h2[1].detach())
         self.h3 = (self.h3[0].detach(), self.h3[1].detach())
+
         
     def __init__(self, device):
         super(GNet, self).__init__()
-        self.bi = 0
+        self.bi = 1
         self.num_layers = 1
-        self.hidden = 100
+        self.input_size = 4
+        self.hidden = 200
         self.linears = Sequential(
             Linear(self.hidden, 4),
             LeakyReLU(inplace=True))
 
-        self.rnn1 = LSTM(input_size = 4, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
-        self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
-        self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn1 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn2 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.l = CrossEntropyLoss()
         self.device = device
 
     def forward(self, x):
+        #print(x.shape)
         x = find_center(x)
+        #x = self.linears(x)
         x = x.view(1, x.size(0), -1)
-        x, self.h1 = self.rnn1(x, self.h1)
-        #x = x[:, :, :int(x.shape[2] / 2)] + x[:, :, int(x.shape[2] / 2):]
-        y = Dropout(0.2)(x)
-        #print(x.shape, y.shape)
-        y, self.h2 = self.rnn2(y, self.h2)
+        x1, self.h1 = self.rnn1(x, self.h1)
+        x1 = x1[:, :, :int(x1.shape[2] / 2)] + x1[:, :, int(x1.shape[2] / 2):]
+        #y = Dropout(0.2)(x)
+        x2, self.h2 = self.rnn2(x, self.h2)
+        x2 = x2[:, :, :int(x2.shape[2] / 2)] + x2[:, :, int(x2.shape[2] / 2):]
+        z = x1 + x2
+        z = z.view(z.size(1), -1)
+        z = self.linears(z)
         #y = y[:, :, :int(y.shape[2] / 2)] + y[:, :, int(y.shape[2] / 2):]
-        z = Dropout(0.2)(y)
-        z, self.h3 = self.rnn3(z, self.h3)
-        #z = z[:, :, :int(z.shape[2] / 2)] + z[:, :, int(z.shape[2] / 2):]
-        x = x + y + z
-        x = x.view(x.size(1), -1)
-        x = self.linears(x)
+        #z = Dropout(0.2)(y)
+        #z, self.h3 = self.rnn3(z, self.h3)
         #y, self.h2 = self.rnn2(y, self.h2)
         #x, self.h3 = self.rnn3(y + x, self.h3)
-        return x
+        return z
 
     def loss(self, yh, y):
         return self.l(yh, y)

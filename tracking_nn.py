@@ -130,7 +130,7 @@ class GNet(Module):
 
     def init_hidden(self):
         self.h1 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
-        self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, 200).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, 200).to(self.device))
+        self.h2 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
         self.h3 = (torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device), torch.zeros((self.bi + 1) * self.num_layers, 1, self.hidden).to(self.device))
 
 
@@ -145,13 +145,13 @@ class GNet(Module):
         self.bi = 1
         self.num_layers = 1
         self.input_size = 4
-        self.hidden = 200
+        self.hidden = 500
         self.linears = Sequential(
             Linear(self.hidden, 4),
             LeakyReLU(inplace=True))
 
         self.rnn1 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
-        self.rnn2 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
+        self.rnn2 = LSTM(input_size = self.input_size, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True, bidirectional = (self.bi == True))
         self.rnn3 = LSTM(input_size = self.hidden, hidden_size = self.hidden, num_layers = self.num_layers, batch_first = True)
         self.l = CrossEntropyLoss()
         self.device = device
@@ -162,13 +162,10 @@ class GNet(Module):
         #x = self.linears(x)
         x = x.view(1, x.size(0), -1)
         x1, self.h1 = self.rnn1(x, self.h1)
-        x1 = Dropout(0.2)(x1)
         x1 = x1[:, :, :int(x1.shape[2] / 2)] + x1[:, :, int(x1.shape[2] / 2):]
         #y = Dropout(0.2)(x)
-        x2, self.h2 = self.rnn2(x1, self.h2)
+        x2, self.h2 = self.rnn2(x, self.h2)
         x2 = x2[:, :, :int(x2.shape[2] / 2)] + x2[:, :, int(x2.shape[2] / 2):]
-        #x2 = Dropout(0.2)(x2)
-        #x3, self.h3 = self.rnn3(x2, self.h3)
         z = x1 + x2
         z = z.view(z.size(1), -1)
         z = self.linears(z)
@@ -180,4 +177,5 @@ class GNet(Module):
         return z
 
     def loss(self, yh, y):
+        #print(yh.shape, y.shape)
         return self.l(yh, y)
