@@ -74,8 +74,9 @@ def median(l):
 
 data_path = "/home/iral-lab/GaitTracking/data/"
 paths=["p18/2.a", "p18/3.a"]
-data = data_handler.LegDataLoader(batch_size = 1, data_path = data_path, paths = paths)
 print("Loading dataset...")
+data = data_handler.LegDataLoader(batch_size = 1, data_path = data_path, paths = paths)
+print("Starting testing...")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 net = torch.load("/home/iral-lab/GaitTracking/best_model.pt", map_location=device)
 net.eval()
@@ -95,8 +96,8 @@ with torch.no_grad():
         tall += time.time() - t
         t = time.time()
         all_dists.extend(eucl_dist(out, label))
-        c += 1
-        #check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
+
+        check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), label.to(torch.device("cpu")))
         if f == -1:
             break
         f, input, label = data.load(2)
