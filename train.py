@@ -11,16 +11,16 @@ flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 #path = "/home/athdom/GaitTracking/"
-#path = "/home/iral-lab/GaitTracking/"
-path = "/home/danai/Desktop/GaitTracking/"
+path = "/home/iral-lab/GaitTracking/"
+#path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
 
 cnn = tracking_nn.CNN().to(device)
-#if flag:
-#    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
-#    for param in cnn.parameters():
-#        param.requires_grad = False
+if flag:
+    cnn.load_state_dict(torch.load(path + "cnn_model.pt", map_location = device))
+    for param in cnn.parameters():
+        param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
 data = data_handler.LegDataLoader(batch_size = batch_size, data_path = data_path)
@@ -60,7 +60,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 10 or epoch == 23:
+    if epoch == 11:# or epoch == 28:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
@@ -83,7 +83,7 @@ for epoch in range(epochs):
         f, input, label = data.load(0)
         #model.init_hidden()
         model.detach_hidden()
-    print("epoch:{}, running loss: {}, #n: {}".format(epoch, running_loss / c, c))
+    print("epoch:{}, running loss: {}".format(epoch, running_loss / c))
     running_loss = 0
     if epoch >= patience:
         with torch.no_grad():
@@ -98,7 +98,7 @@ for epoch in range(epochs):
                     model.init_hidden()
                 input, label = input.to(device), label.to(device)
                 output = model.forward(input)
-                acc += model.loss(output, label) / input.shape[0]
+                acc += model.loss(output, label).item() / input.shape[0]
                 m1, d = eucl_dist(output, label)
                 dist += d
                 if m1 > m:
