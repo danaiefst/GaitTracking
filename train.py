@@ -11,7 +11,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 paths = ["p1/2.a", "p5/2.a", "p11/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p18/3.a"]
 #paths = ["p1/2.a", "p18/2.a", "p18/3.a"]
-batch_size = 32
+batch_size = 64
 
 model = torch.load("model.pt", map_location = device)
 model.eval()
@@ -21,7 +21,7 @@ data = data_handler.LegDataLoader(batch_size = batch_size, paths = paths)
 
 epochs = 1000
 patience = 0
-learning_rate = 0.001
+learning_rate = 0.0001
 grid = 7
 optimizer = Adam(gnet.parameters(), lr = learning_rate)
 best_loss = float("Inf")
@@ -35,7 +35,7 @@ def accuracy(out, states):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 13 or epoch == 26:# or epoch == 30:
+    if epoch == 1:# or epoch == 26:# or epoch == 30:
         learning_rate *= 0.1
         optimizer = Adam(gnet.parameters(), lr = learning_rate)
     #if epoch == 17:

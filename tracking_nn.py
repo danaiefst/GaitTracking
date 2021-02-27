@@ -145,7 +145,7 @@ class GNet(Module):
         self.bi = 1
         self.num_layers = 1
         self.input_size = 4
-        self.hidden = 500
+        self.hidden = 200
         self.linears = Sequential(
             Linear(self.hidden, 4),
             LeakyReLU(inplace=True))
