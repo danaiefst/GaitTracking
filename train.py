@@ -8,7 +8,7 @@ import sys
 from torch.optim import Adam
 
 flag = int(sys.argv[1])
-device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 path = "/home/athdom/GaitTracking/"
 #path = "/home/iral-lab/GaitTracking/"
