@@ -41,8 +41,17 @@ class leg:
 
 class walk:
 
-    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40):
-        self.direction = direction
+    def __init__(self, rleg=None, lleg=None, direction=0, centeroffsetx=None, centeroffsety=None, maxinterdist=0.3, mininterdist=0.1, laser_range=np.pi, resolution=700, maxbema=0.4, minbema=0.1, dt=1/40, occlusions_only=False):
+        self.occlusions_only = occlusions_only
+        if not occlusions_only:
+            self.direction = direction
+        else:
+            theta_a = 28 * np.pi / 180
+            theta_b = 38 * np.pi / 180
+            if np.random.random() < 0.5:
+                self.direction = np.random.random() * (theta_b - theta_a) + theta_a
+            else:
+                self.direction = np.random.random() * (theta_a - theta_b) - theta_a
         self.maxinterdist = maxinterdist
         self.mininterdist = mininterdist
         if centeroffsetx is None:
@@ -76,27 +85,28 @@ class walk:
         self.stateend = np.random.randint(50, 200)
 
     def move(self):
-        self.statetimer += 1
-        if self.stateend == self.statetimer:
-            if np.random.random() < 0.8:
-                self.state = 1
-            else:
-                self.state = 0
-            self.statetimer = 0
-            self.stateend = np.random.randint(50, 200)
-            self.angle = 0
-            self.startangle = self.direction
-            if self.state != 0:
-                xM, xm = self.lleg.ampx + self.lleg.offsetx + self.lleg.radius, -self.rleg.ampx + self.rleg.offsetx - self.rleg.radius
-                yMl, yml = self.lleg.ampy + self.lleg.offsety + self.lleg.radius, -self.lleg.ampy + self.lleg.offsety - self.lleg.radius
-                yMr, ymr = self.rleg.ampy + self.rleg.offsety + self.rleg.radius, -self.rleg.ampy + self.rleg.offsety - self.rleg.radius
-                #legacy rotation
-                #maxangle = min(np.pi / 2 + np.arctan(np.sqrt(xm ** 2 + yMr ** 2 - MINX ** 2) / MINX), np.pi / 2 + np.arctan(MINY / -np.sqrt(xM ** 2 + ymr ** 2 - MINY ** 2)))
-                #minangle = max(np.arctan(np.sqrt(xM ** 2 + yMl ** 2 - MAXX ** 2) / MAXX) - np.pi / 2, np.arctan(MINY / np.sqrt(xM ** 2 + yml ** 2 - MINY ** 2)) - np.pi / 2)
-                maxangle = np.pi/4
-                minangle = -np.pi/4
-                self.angle = np.random.random() * (maxangle - minangle) + minangle
-        self.direction += (self.angle - self.startangle) / self.stateend
+        if not self.occlusions_only:
+            self.statetimer += 1
+            if self.stateend == self.statetimer:
+                if np.random.random() < 0.8:
+                    self.state = 1
+                else:
+                    self.state = 0
+                self.statetimer = 0
+                self.stateend = np.random.randint(50, 200)
+                self.angle = 0
+                self.startangle = self.direction
+                if self.state != 0:
+                    xM, xm = self.lleg.ampx + self.lleg.offsetx + self.lleg.radius, -self.rleg.ampx + self.rleg.offsetx - self.rleg.radius
+                    yMl, yml = self.lleg.ampy + self.lleg.offsety + self.lleg.radius, -self.lleg.ampy + self.lleg.offsety - self.lleg.radius
+                    yMr, ymr = self.rleg.ampy + self.rleg.offsety + self.rleg.radius, -self.rleg.ampy + self.rleg.offsety - self.rleg.radius
+                    #legacy rotation
+                    #maxangle = min(np.pi / 2 + np.arctan(np.sqrt(xm ** 2 + yMr ** 2 - MINX ** 2) / MINX), np.pi / 2 + np.arctan(MINY / -np.sqrt(xM ** 2 + ymr ** 2 - MINY ** 2)))
+                    #minangle = max(np.arctan(np.sqrt(xM ** 2 + yMl ** 2 - MAXX ** 2) / MAXX) - np.pi / 2, np.arctan(MINY / np.sqrt(xM ** 2 + yml ** 2 - MINY ** 2)) - np.pi / 2)
+                    maxangle = np.pi/4
+                    minangle = -np.pi/4
+                    self.angle = np.random.random() * (maxangle - minangle) + minangle
+            self.direction += (self.angle - self.startangle) / self.stateend
         self.rleg.move()
         self.lleg.move()
 
@@ -168,35 +178,35 @@ class walk:
 #r, = ax.plot([0], [0], 'o')
 #l, = ax.plot([0], [0], 'o')
 #ls, = ax.plot([0], [0], 'o', markersize=1)
-data_path = "/home/danai/Desktop/GaitTracking/data/cgdata"
-os.chdir(data_path)
+data_path = "data/cgdata/"
+#os.chdir(data_path)
 N = 1000
 vision = 0.6
 c = 0
-valid = open("valid.txt", "w")
+valid = open(data_path + "valid.txt", "w")
 laser = np.zeros((13 * 4 * N, 1400))
 centers = np.zeros((13 * 4 * N, 4))
 gait_states = np.zeros((13 * 4 * N))
 for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
     for j in range(4):
-        print("{} {}".format(c, c + 999), file=valid)
         W = walk()
+        print("{} {}".format(c, c + 999), file=valid)
         for i in range(N):
             rd, ld = W.coords()
             #r.set_data([rd[0]], [rd[1]])
             #l.set_data([ld[0]], [ld[1]])
-            lx, ly = W.laser_points(vision_ratio = vision, noise = 0.002)
+            lx, ly = W.laser_points(vision_ratio=vision, noise=0.002)
             #ls.set_data(lx, ly)
             #fig.canvas.draw()
             #fig.canvas.flush_events()
-            #sleep(1)
+            #sleep(1/40)
             W.move()
             laser[c] = np.stack([lx, ly]).T.reshape(-1)
             centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1]
-            gait_states[c] = W.gait_state()
+            #gait_states[c] = W.gait_state()
             #print(gait_states[c])
             c += 1
- 
-np.savetxt("laserpoints.csv", laser, delimiter=",")
-np.savetxt("centers.csv", centers, delimiter=",")
-np.savetxt("gait_states.csv", gait_states, delimiter=",")
+
+np.savetxt(data_path + "laserpoints.csv", laser, delimiter=",")
+np.savetxt(data_path + "centers.csv", centers, delimiter=",")
+#np.savetxt("gait_states.csv", gait_states, delimiter=",")
