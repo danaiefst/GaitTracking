@@ -1,8 +1,18 @@
 import torch
 from matplotlib import pyplot as plt
 import data_handler
-import tracking_nn1
+import tracking_nn
 import time
+
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
+
+
+def printeval(true, pred):
+    print(f"Recall score (weighted): {recall_score(true, pred, average='weighted')}")
+    print(f"F1 score (weighted): {f1_score(true, pred, average='weighted')}")
+    print(f"Precision score (weighted): {precision_score(true, pred, average='weighted')}")
 
 img_side = 112
 max_height = 1.2
@@ -65,21 +75,24 @@ def median(l):
     else:
         return l[len(l) // 2]
 
+def find_classes(out):
+    return out.argmax(axis=1)
 
 def accuracy(out, states):
-    classes = out.argmax(axis=1)
+    classes = find_classes(out)
     return (classes[0] == states[0])
     
-data_path = "/home/danai/Desktop/GaitTracking/data/"
 paths=["p18/2.a", "p18/3.a"]
 data = data_handler.LegDataLoader(paths = paths, cg = 0)
 print("Loading dataset...")
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#net.load_state_dict(torch.load("/home/shit/Desktop/GaitTracking/model.pt"))
+cnn = tracking_nn.CNN().to(device)
+rnn = tracking_nn.RNN().to(device)
+net = tracking_nn.Net(device, cnn, rnn).to(device)
+net.load_state_dict(torch.load("model_p18_2a_p1_2a.pt", map_location=device).state_dict())
 #net.to(device)
-net = torch.load("/home/danai/Desktop/GaitTracking/model.pt", map_location=device)
-gnet = torch.load("/home/danai/Desktop/GaitTracking/best_gmodel.pt", map_location=device)
-print(gnet)
+#net = torch.load("/home/danai/Desktop/GaitTracking/model_p18_2a_p1_2a.pt", map_location=device)
+gnet = torch.load("gmodel.pt", map_location=device)
 net.eval()
 gnet.eval()
 all_dists = []
@@ -88,6 +101,8 @@ net.init_hidden()
 gnet.init_hidden()
 acc = 0
 c = 1
+all_out_states = None
+all_states = None
 with torch.no_grad():
     while True:
         if f:
@@ -97,6 +112,12 @@ with torch.no_grad():
         c += 1
         out = net(input)
         out1 = gnet(out)
+        if all_states is not None:
+            all_states = torch.cat([all_states, states])
+            all_out_states = torch.cat([all_out_states, find_classes(out1)])
+        else:
+            all_out_states = find_classes(out1)
+            all_states = states
         acc += accuracy(out1, states)
         #check_out(input.to(torch.device("cpu")), out.to(torch.device("cpu")), out1, states)
         if f == -1:
@@ -104,4 +125,5 @@ with torch.no_grad():
         f, input, states = data.load(2)
 
 all_dists.sort()
+printeval(all_states.cpu(), all_out_states.cpu())
 print("Gait acc:", acc / c * 100)

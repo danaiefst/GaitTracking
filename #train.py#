@@ -7,6 +7,7 @@ import data_handler, tracking_nn
 import sys
 from torch.optim import Adam
 
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device)
 paths = ["p18/3.a", "p5/2.a", "p11/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p1/2.a"]
