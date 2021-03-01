@@ -15,7 +15,7 @@ path = "/home/athdom/GaitTracking/"
 #path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
-paths=["p18/3.a", "p5/2.a", "p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p1/2.a"]
+paths=["p18/3.a", "p5/2.a", "p11/2.a", "p1/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p11/3.a"]
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
