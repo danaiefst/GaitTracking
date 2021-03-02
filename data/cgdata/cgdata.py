@@ -204,40 +204,59 @@ class walk:
                 return (i + 2) % 4 + 1
         
 
-#plt.ion()
-#fig, ax = plt.subplots()
+plt.ion()
+fig, ax = plt.subplots()
 
-#plt.xlim(MINX, MAXX)
-#plt.ylim(MINY, MAXY)
-#r, = ax.plot([0], [0], 'o')
-#l, = ax.plot([0], [0], 'o')
-#ls, = ax.plot([0], [0], 'o', markersize=1)
+plt.xlim(MINX, MAXX)
+plt.ylim(MINY, MAXY)
+r, = ax.plot([0], [0], 'o')
+l, = ax.plot([0], [0], 'o')
+ls, = ax.plot([0], [0], 'o', markersize=1)
 N = 1000
 vision = 0.6
 c = 0
 valid = open("valid.txt", "w")
-laser = np.zeros((13 * 4 * N, 1024))
-centers = np.zeros((13 * 4 * N, 4))
-#gait_states = np.zeros((13 * 4 * N))
+laser = np.zeros((13 * 6 * N, 1024))
+centers = np.zeros((13 * 6 * N, 4))
+#gait_states = np.zeros((13 * 6 * N))
 for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
-    for j in range(2):
+    for j in range(3):
         print("{} {}".format(c, c + N - 1), file=valid)
-        W = walk(show_trails=True)
+        W = walk(show_trails=True, occlusions_only=True)
         for i in range(N):
             rd, ld = W.coords()
-            #r.set_data([rd[0]], [rd[1]])
-            #l.set_data([ld[0]], [ld[1]])
+            r.set_data([rd[0]], [rd[1]])
+            l.set_data([ld[0]], [ld[1]])
             lx, ly = W.laser_points(vision_ratio=vision, noise=0.002)
-            #ls.set_data(lx, ly)
-            #fig.canvas.draw()
-            #fig.canvas.flush_events()
-            #sleep(1/40)
+            ls.set_data(lx, ly)
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+            sleep(1/80)
             W.move()
             laser[c] = np.stack([lx, ly]).T.reshape(-1)
             centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1]
             #gait_states[c] = W.gait_state()
             #print(gait_states[c])
             c += 1
+    print("out1")
+    print("{} {}".format(c, c + N - 1), file=valid)
+    W = walk(show_trails=True)
+    for i in range(N):
+        rd, ld = W.coords()
+        #r.set_data([rd[0]], [rd[1]])
+        #l.set_data([ld[0]], [ld[1]])
+        lx, ly = W.laser_points(vision_ratio=vision, noise=0.002)
+        #ls.set_data(lx, ly)
+        #fig.canvas.draw()
+        #fig.canvas.flush_events()
+        #sleep(1/40)
+        W.move()
+        laser[c] = np.stack([lx, ly]).T.reshape(-1)
+        centers[c, 0], centers[c, 1], centers[c, 2], centers[c, 3] = rd[0], rd[1], ld[0], ld[1]
+        #gait_states[c] = W.gait_state()
+        #print(gait_states[c])
+        c += 1
+    print("out2")
     print("{} {}".format(c, c + N - 1), file=valid)
     W = walk()
     for i in range(N):
@@ -255,9 +274,9 @@ for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
         #gait_states[c] = W.gait_state()
         #print(gait_states[c])
         c += 1
-
+    print("out3")
     print("{} {}".format(c, c + N - 1), file=valid)
-    W = walk(occlusions_only = True)
+    W = walk(occlusions_only=True)
     for i in range(N):
         rd, ld = W.coords()
         #r.set_data([rd[0]], [rd[1]])
@@ -273,8 +292,10 @@ for accel in [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5]:
         #gait_states[c] = W.gait_state()
         #print(gait_states[c])
         c += 1
+    print("out4")
 
-
+        
+ 
 np.savetxt("laserpoints.csv", laser, delimiter=",")
 np.savetxt("centers.csv", centers, delimiter=",")
 #np.savetxt("gait_states.csv", gait_states, delimiter=",")
