@@ -11,7 +11,7 @@ flag = int(sys.argv[1])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Working on", device) 
 batch_size = 32
-paths = ["p1/2.a", "p18/3.a", "p11/3.a", "p16/3.a", "p17/2.a", "p11/2.a", "p18/2.a", "p17/3.a"]
+paths = ["p17/3.a", "p18/3.a", "p11/3.a", "p16/3.a", "p17/2.a", "p11/2.a", "p18/2.a", "p1/2.a"]
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
