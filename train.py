@@ -15,7 +15,7 @@ path = "/home/athdom/GaitTracking/"
 #path = "/home/danai/Desktop/GaitTracking/"
 data_path = path + "data/" 
 batch_size = 32
-paths=["p18/3.a", "p5/2.a", "p11/2.a", "p1/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p11/3.a"]
+paths=["p18/3.a", "p11/2.a", "p1/2.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/2.a", "p11/3.a"]
 
 cnn = tracking_nn.CNN().to(device)
 if flag:
@@ -61,15 +61,13 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 10 or epoch == 25:
+    if epoch == 25 or epoch == 50:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
     model.init_hidden()
     c = 0
     while(True):
-        if f:
-            model.init_hidden()
         input, label = input.to(device), label.to(device)
         optimizer.zero_grad()
         output = model.forward(input)
@@ -81,6 +79,8 @@ for epoch in range(epochs):
         c += 1
         if f == -1:
             break
+        if f == 1:
+            model.init_hidden()
         f, input, label = data.load(0)
         #model.init_hidden()
         model.detach_hidden()
@@ -95,8 +95,6 @@ for epoch in range(epochs):
             model.init_hidden()
             m = 0
             while(True):
-                if f:
-                    model.init_hidden()
                 input, label = input.to(device), label.to(device)
                 output = model.forward(input)
                 acc += model.loss(output, label).item() / input.shape[0]
@@ -107,6 +105,8 @@ for epoch in range(epochs):
                 c += 1
                 if f == -1:
                     break
+                if f == 1:
+                    model.init_hidden()
                 f, input, label = data.load(1)
                 #model.init_hidden()
             if acc < best_acc:

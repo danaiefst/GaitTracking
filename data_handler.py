@@ -159,7 +159,6 @@ class LegDataLoader():
                 data = self.train_data
         elif set == 1:
             data = self.val_data
-            self.phase = 9
         else:
             data = self.test_data
             self.phase = 9
