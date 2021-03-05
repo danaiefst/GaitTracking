@@ -19,7 +19,7 @@ if flag:
         param.requires_grad = False
 rnn = tracking_nn.RNN().to(device)
 model = tracking_nn.Net(device, cnn, rnn).to(device)
-paths = ["p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p18/3.a", "p18/2.a", "p1/2.a"]
+paths = ["p11/2.a", "p11/3.a", "p16/3.a", "p17/2.a", "p17/3.a", "p1/2.a", "p18/2.a", "p18/3.a"]
 data = data_handler.LegDataLoader(batch_size = batch_size)
 # Train the nn
 
@@ -57,7 +57,7 @@ def eucl_dist(out, labels):
 print("Started training...")
 for epoch in range(epochs):
     running_loss = 0
-    if epoch == 10 or epoch == 25:
+    if epoch == 20 or epoch == 50:
         learning_rate *= 0.1
         optimizer = Adam(model.parameters(), lr = learning_rate)
     f, input, label = data.load(0)
